@@ -1,0 +1,178 @@
+NAME
+    YAML::Tiny - Read/Write YAML files with as little code as possible
+
+PREAMBLE
+    WARNING: THIS MODULES IS HIGHLY EXPERIMENTAL AND SUBJECT TO CHANGE
+    WITHOUT NOTICE
+
+    The YAML specification is huge. Like, really huge. It contains all the
+    functionality of XML, except with flexibility and choice, which makes
+    the full specification more complex than XML.
+
+    The pure-Perl implementation YAML costs just over 4 megabytes of memory
+    to load. Just like with Windows .ini files (3 meg to load) and CSS (3.5
+    meg to load) the situation is just asking for YAML::Tiny module, to
+    implement a incomplete but usable subset of the functionality, in as
+    little code as possible.
+
+    Now, given the YAML features one would need in order to have something
+    that is usable for things like META.yml and simple configuration files,
+    there's still enough complexity that I'm not sure if it is even possible
+    to do a YAML::Tiny module.
+
+    So I'm going to impose some ground rules.
+
+    Like the other "::Tiny" modules, YAML::Tiny will have no non-core
+    dependencies, and work back to at least perl 5.005_03, hopefully 5.004.
+
+    I'm setting a hard-limit of 400k of memory (1/10th of YAML.pm).
+
+    I plan to implement features from the most common to the least common,
+    but if we hit 400k limit then we stop until we can find a way to squish
+    the same functionality into less code and free some up.
+
+    At this point, other than unquoted scalars, arrays, hashes and ASCII, I
+    promise nothing.
+
+    At present I've (literally) cut-and-pasted a Config::Tiny-like set of
+    methods, and I've implemented enough code to handle the following.
+
+      # A comment
+      ---
+      - foo
+      - bar
+
+    And that's it. So do not use this module for anything other than
+    experimentation. It's only just getting started.
+
+SYNOPSIS
+        #############################################
+        # In your file
+    
+        ---
+        rootproperty: blah
+        section:
+          one: two
+          three: four
+          Foo: Bar
+          empty: ~
+    
+        #############################################
+        # In your program
+    
+        use YAML::Tiny;
+    
+        # Create a YAML file
+        my $yaml = YAML::Tiny->new;
+    
+        # Open the config
+        $yaml = YAML::Tiny->read( 'file.yml' );
+    
+        # Reading properties
+        my $root = $yaml->[0]->{rootproperty};
+        my $one  = $yaml->[0]->{section}->{one};
+        my $Foo  = $yaml->[0]->{section}->{Foo};
+    
+        # Changing data
+        $yaml->[0]->{newsection} = { this => 'that' }; # Add a section
+        $yaml->[0]->{section}->{Foo} = 'Not Bar!';     # Change a value
+        delete $yaml->[0]->{section};                  # Delete a value or section
+    
+        # Add an entire document
+        $yaml->[1] = [ 'foo', 'bar', 'baz' ];
+    
+        # Save the file
+        $yaml->write( 'file.conf' );
+
+DESCRIPTION
+    "Config::Tiny" is a perl class to read and write YAML-style files with
+    as little code as possible, reducing load time and memory overhead.
+
+    Most of the time it is accepted that Perl applications use a lot of
+    memory and modules. The "::Tiny" family of modules is specifically
+    intended to provide an ultralight alternative to the standard modules.
+
+    This module is primarily for reading human written files (like config
+    files) and generating simple human-readable report. Note that I said
+    human-readable and not geek-readable. The sort of files that your
+    average manager or secretary should be able to look at and make sense
+    of.
+
+    YAML::Tiny does not generate comments, it won't necesarily preserve the
+    order of your hashs, and it may normalise if reading in and writing out
+    again.
+
+    It only supports a very basic subset of the full YAML specification.
+
+    It is also targetted at files like Perl's META.yml, for which a small
+    and easily-embeddable module would be highly useful.
+
+    Features will only be added if they are human readable, and can be
+    written in a few lines of code. Please don't be offended if your request
+    is refused. Someone has to draw the line, and for YAML::Tiny that
+    someone is the module author.
+
+    If you need something with more power move up to YAML (4 megabytes of\
+    memory overhead) or YAML::Syck (requires libsyck).
+
+    To restate, YAML::Tiny does not preserve your comments, whitespace, or
+    the order of your YAML data. But it should round-trip from Perl
+    structure to file and back again just fine.
+
+METHODS
+  new
+    The constructor "new" creates and returns an empty "Config::Tiny"
+    object.
+
+  read $filename
+    The "read" constructor reads a YAML file, and returns a new "YAML::Tiny"
+    object containing the contents of the file.
+
+    Returns the object on success, or "undef" on error.
+
+    When "read" fails, "YAML::Tiny" sets an error message internally you can
+    recover via "<YAML::Tiny-"errstr>>. Although in some cases a failed
+    "read" will also set the operating system error variable $!, not all
+    errors do and you should not rely on using the $! variable.
+
+  read_string $string;
+    The "read_string" method takes as argument the contents of a YAML file
+    (a YAML document) as a string and returns the "YAML::Tiny" object for
+    it.
+
+  write $filename
+    The "write" method generates the file content for the properties, and
+    writes it to disk to the filename specified.
+
+    Returns true on success or "undef" on error.
+
+  write_string
+    Generates the file content for the object and returns it as a string.
+
+  errstr
+    When an error occurs, you can retrieve the error message either from the
+    $YAML::Tiny::errstr variable, or using the "errstr()" method.
+
+SUPPORT
+    Bugs should be reported via the CPAN bug tracker at
+
+    <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=YAML-Tiny>
+
+    For other issues, or commercial enhancement or support, contact the
+    author.
+
+AUTHOR
+    Adam Kennedy <cpan@ali.as>
+
+SEE ALSO
+    <http://ali.as/>, YAML, YAML::Syck, Config::Tiny, CSS::Tiny
+
+COPYRIGHT
+    Copyright 2006 Adam Kennedy. All rights reserved.
+
+    This program is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
+
+    The full text of the license can be found in the LICENSE file included
+    with this module.
+

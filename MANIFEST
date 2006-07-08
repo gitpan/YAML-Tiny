@@ -15,7 +15,10 @@ META.yml
 README
 t/01_compile.t
 t/02_basic.t
-t/03_meta_yml.t
-t/04_regression.t
+t/03_regression.t
+t/11_meta_yml.t
+t/12_plagger.t
+t/13_perl_smith.t
 t/99_pod.t
+t/data/vanilla.yml
 t/lib/MyTests.pm

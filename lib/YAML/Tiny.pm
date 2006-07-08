@@ -2,18 +2,37 @@ package YAML::Tiny;
 
 # YAML, but just the best bits
 
-use 5.004;
+use 5.005;
 use strict;
 
 use vars qw{$VERSION $errstr};
 BEGIN {
-	$VERSION = '0.02';
+	$VERSION = '0.03';
 	$errstr  = '';
 }
+
+# YAML::Tiny might want to be a drop-in replacement.
+# If so we should add a Dump and Load function
+#
+# sub import {
+#    my ($package) = caller;
+#    no strict 'refs';
+#    *{$package . '::Dump'} = \&Dump;
+#    *{$package . '::Load'} = \&Load;
+#}
+#
+#sub Dump {
+#    return YAML::Tiny->new(@_)->write_string();
+#}
+#
+#sub Load {
+#    die;
+#}
 
 # Create the main error hash
 my %ERROR = (
 	YAML_PARSE_ERR_NO_FINAL_NEWLINE => "Stream does not end with newline character",
+	
 );
 
 my %NO = (
@@ -26,20 +45,18 @@ my %NO = (
 	'|' => 'YAML::Tiny does not support literal multi-line scalars',
 	'>' => 'YAML::Tiny does not support folded multi-line scalars',
 	'!' => 'YAML::Tiny does not support explicit tags',
-	"'" => 'YAML::Tiny does not support quoted strings',
-	'"' => 'YAML::Tiny does not support quoted strings',
+	"'" => 'YAML::Tiny does not support quoted strings... yet',
+	'"' => 'YAML::Tiny does not support quoted strings... yet',
 );
 
-use constant FILE       => 0;
-use constant START      => 1;
-use constant ARRAY      => 2;
-use constant HASH       => 3;
-use constant OPEN_ARRAY => 4;
-use constant OPEN_HASH  => 5;
+# Regular expressions
+my $RE_HEAD = qr/^---(?:\s*(.+)\s*)?$/;
+
 
 # Create an empty YAML::Tiny object
 sub new {
-	bless [], shift;
+	my $class = shift;
+	bless [ @_ ], $class;
 }
 
 # Create an object from a file
@@ -68,153 +85,141 @@ sub read_string {
 
 	# Handle special cases
 	return undef unless defined $_[0];
-	return $self unless length  $_[0];
+	return $self unless length $_[0];
 	unless ( $_[0] =~ /[\012\015]+$/ ) {
 		return $class->_error('YAML_PARSE_ERR_NO_FINAL_NEWLINE');
 	}
 
-	# State variables
-	my $line     = 0;
-	my $state    = FILE;
-	my $document = undef;
-	my @indents  = ( );
-	my @cursors  = ( );
-	my $key      = undef;
+	# Split the file into lines
+	my @lines = grep { ! /^\s*(?:\#.+)?$/ }
+	            split /(?:\015{1,2}\012|\015|\012)/, shift;
 
-	foreach ( split /(?:\015{1,2}\012|\015|\012)/, shift ) {
-		$line++;
+	# A nibbling parser
+	while ( @lines ) {
+		# We are expecting a document header
+		unless ( shift(@lines) =~ /$RE_HEAD/ ) {
+			die "Did not get document header";
+		}
 
-		# Skip comments and empty lines
-		next if /^\s*(?:\#|$)/;
-
-		# Get the indent level for the line
-		my $indent = s/^(\s+)// ? length($1) : 0;
-
-		# Check for a document header
-		if ( s/^(---(?:\s+|\Z))// ) {
-			if ( $state == FILE ) {
-				$state = START;
-			} else {
-				# Change to new document
-				push @$self, $document;
-				$document = undef;
-				$state    = START;
-			}
-			next unless length $_;
-			my $c = substr($_, 0, 1);
-			return $class->_error($NO{$c}) if $NO{$c};
-
-			# Assume a scalar
-			$document = $self->_read_scalar($_);
-
+		# Handle scalar documents
+		if ( defined $1 ) {
+			push @$self, $self->_read_scalar("$1");
 			next;
 		}
 
-		# Are we in START mode, expecting a list or hash
-		if ( $state == START ) {
-			my $c = substr($_,0,1);
-			return $class->_error($NO{$c}) if $NO{$c};
-			if ( s/^(-(?:\s+|\Z))// ) {
-				# We have an ARRAY
-				$document = [ ];
-				push @indents, $indent;
-				push @cursors, $document;
-				unless ( length $_ ) {
-					# Open array
-					$state = OPEN_ARRAY;
-					next;
-				}
-				$c = substr($_, 0, 1);
-				return $class->_error($NO{$c}) if $NO{$c};
+		if ( ! @lines or $lines[0] =~ /$RE_HEAD/ ) {
+			# A naked document
+			push @$self, undef;
 
-				# Assume a scalar
-				push @$document, $self->_read_scalar($_);
-				$state = ARRAY;
-				next;
-			}
-			if ( s/^(\w+):(?:\s+|$)// ) {
-				# We have a HASH
-				$document = { };
-				$key      = $1;
-				push @indents, $indent;
-				push @cursors, $document;
-				unless ( length $_ ) {
-					# Open hash
-					$state = OPEN_HASH;
-					$document->{$key} = undef;
-					next;
-				}
-				$c = substr($_, 0, 1);
-				return $class->_error($NO{$c}) if $NO{$c};
+		} elsif ( $lines[0] =~ /\s*\-/ ) {
+			# An array at the root
+			my $document = [ ];
+			push @$self, $document;
+			$self->_read_array( $document, [ 0 ], \@lines );
 
-				# Assume a scalar
-				$document->{$key} = $self->_read_scalar($_);
-				$state = HASH;
-				next;
-			}
-			die "CODE INCOMPLETE";		
+		} elsif ( $lines[0] =~ /\s*\w/ ) {
+			# A hash at the root
+			my $document = { };
+			push @$self, $document;
+			$self->_read_hash( $document, [ 0 ], \@lines );
+
+		} else {
+			die "CODE INCOMPLETE";
 		}
-
-		# Are we in ARRAY mode, expect the next array element
-		if ( $state == ARRAY ) {
-			my $c = substr($_,0,1);
-			return $class->_error($NO{$c}) if $NO{$c};
-			if ( s/^(-(?:\s+|\Z))// ) {
-				# We have an ARRAY
-				### Assume for now we are at the same indent level
-				unless ( length $_ ) {
-					# Open array
-					$state = OPEN_ARRAY;
-					next;
-				}
-				$c = substr($_, 0, 1);
-				return $class->_error($NO{$c}) if $NO{$c};
-
-				# Assume a scalar
-				push @$document, $self->_read_scalar($_);
-				next;
-			}
-		}
-
-		# Are we in HASH mode, expect the next hash element
-		if ( $state == HASH ) {
-			my $c = substr($_,0,1);
-			return $class->_error($NO{$c}) if $NO{$c};
-			if ( s/^(\w+):(?:\s+|$)// ) {
-				# We have a HASH
-				$key = $1;
-
-				### Assume for now we are at the same indent level
-				unless ( length $_ ) {
-					# Open hash
-					$state = OPEN_HASH;
-					$document->{$key} = undef;
-					next;
-				}
-				$c = substr($_, 0, 1);
-				return $class->_error($NO{$c}) if $NO{$c};
-
-				# Assume a scalar
-				$document->{$key} = $self->_read_scalar($_);
-				next;
-			}
-		}
-
-		die "CODE INCOMPLETE";
 	}
-
-	# Save final document
-	push @$self, $document unless $state == FILE;
 
 	$self;
 }
 
+sub _check_support {
+	# Check if we support the next char
+	my $errstr = $NO{substr($_[1], 0, 1)};
+	Carp::croak($errstr) if $errstr;
+}
+
 # Deparse a scalar string to the actual scalar
 sub _read_scalar {
-	my $self   = shift;
-	my $string = shift;
-	return undef if $string eq '~';
-	return $string;
+	return undef if $_[1] eq '~';
+	return $_[1];
+}
+
+# Parse an array
+sub _read_array {
+	my ($self, $array, $indent, $lines) = @_;
+
+	while ( @$lines ) {
+		$lines->[0] =~ /^(\s*)/;
+		if ( length($1) < $indent->[-1] ) {
+			return 1;
+		} elsif ( length($1) > $indent->[-1] ) {
+			die "Hash line over-indented";
+		}
+
+		# Parse the line
+		if ( $lines->[0] =~ /^\s*\-(\s*)(.+?)\s*$/ ) {
+			# Array entry with a value
+			shift @$lines;
+			push @$array, $self->_read_scalar( "$2" );
+
+		} elsif ( $lines->[0] =~ /^\s*\-\s*$/ ) {
+			# Naked indenter
+			shift @$lines;
+			if ( $lines->[0] =~ /^(\s*)\-/ ) {
+				push @$array, [ ];
+				$self->_read_array( $array->[-1], [ @$indent, length($1) ], $lines );
+
+			} elsif ( $lines->[0] =~ /^(\s*)\w/ ) {
+				push @$array, { };
+				$self->_read_hash( $array->[-1], [ @$indent, length($1) ], $lines );
+
+			} else {
+				die "CODE INCOMPLETE";
+			}
+
+		} else {
+			die "CODE INCOMPLETE";
+		}
+	}
+
+	return 1;
+}
+
+# Parse an array
+sub _read_hash {
+	my ($self, $hash, $indent, $lines) = @_;
+
+	while ( @$lines ) {
+		$lines->[0] =~/^(\s*)/;
+		if ( length($1) < $indent->[-1] ) {
+			return 1;
+		} elsif ( length($1) > $indent->[-1] ) {
+			die "Hash line over-indented";
+		}
+
+		# Get the key
+		unless ( $lines->[0] =~ s/^\s*(\w+)\s*:\s*// ) {
+			die "Bad hash line";
+		}
+		my $key = $1;
+
+		# Do we have a value?
+		if ( length $lines->[0] ) {
+			# Yes
+			$hash->{$key} = $self->_read_scalar( shift @$lines );
+		} else {
+			# An indent
+			shift @$lines;
+			if ( $lines->[0] =~ /^(\s*)-/ ) {
+				$hash->{$key} = [];
+				$self->_read_array( $hash->{$key}, [ @$indent, length($1) ], $lines );
+			} elsif ( $lines->[0] =~ /^(\s*)./ ) {
+				$hash->{$key} = {};
+				$self->_read_hash( $hash->{$key}, [ @$indent, length($1) ], $lines );
+			}
+		}
+	}
+
+	return 1;
 }
 
 # Save an object to a file
@@ -238,47 +243,89 @@ sub write_string {
 	return '' unless @$self;
 
 	# Iterate over the documents
-	my @lines = ();
-	foreach my $document ( @$self ) {
-		# Special cases
-		unless ( defined $document ) {
-			push @lines, '---';
-			next;
-		}
-		unless ( ref $document ) {
-			push @lines, "--- $document";
-			next;
-		}
+	my $indent = 0;
+	my @lines  = ();
+	foreach my $cursor ( @$self ) {
+		push @lines, '---';
 
-		# Handle a plain list
-		if ( ref($document) eq 'ARRAY' ) {
-			push @lines, '---';
-			push @lines, map {
-				"- " . $self->_write_scalar($_)
-				} @$document;
-			next;
-		}
+		# An empty document
+		if ( ! defined $cursor ) {
+			# Do nothing
 
-		# Handle a plain hash
-		if ( ref($document) eq 'HASH' ) {
-			push @lines, '---';
-			push @lines, map {
-				$_ . ': ' . $self->_write_scalar($document->{$_})
-				} sort keys %$document;
-			next;
-		}
+		# A scalar document
+		} elsif ( ! ref $cursor ) {
+			$lines[-1] .= $cursor;
 
-		die "CODE INCOMPLETE";
+		# A list at the root
+		} elsif ( ref $cursor eq 'ARRAY' ) {
+			push @lines, $self->_write_array( $indent, $cursor );
+
+		# A hash at the root
+		} elsif ( ref $cursor eq 'HASH' ) {
+			push @lines, $self->_write_hash( $indent, $cursor );
+
+		} else {
+			die "CODE INCOMPLETE";
+		}
 	}
 
 	join '', map { "$_\n" } @lines;
 }
 
 sub _write_scalar {
-	my $self   = shift;
-	my $string = shift;
-	return '~' unless defined $string;
-	return $string;
+	return '~' unless defined $_[1];
+	return $_[1];
+}
+
+sub _write_array {
+	my ($self, $indent, $array) = @_;
+	my @lines  = ();
+	foreach my $el ( @$array ) {
+		my $line = ('  ' x $indent) . '-';
+		if ( ! ref $el ) {
+			$line .= ' ' . $self->_write_scalar( $el );
+			push @lines, $line;
+
+		} elsif ( ref $el eq 'ARRAY' ) {
+			push @lines, $line;
+			push @lines, $self->_write_array( $indent + 1, $el );
+
+		} elsif ( ref $el eq 'HASH' ) {
+			push @lines, $line;
+			push @lines, $self->_write_hash( $indent + 1, $el );
+
+		} else {
+			die "CODE INCOMPLETE";
+		}
+	}
+
+	@lines;
+}
+
+sub _write_hash {
+	my ($self, $indent, $hash) = @_;
+	my @lines  = ();
+	foreach my $name ( sort keys %$hash ) {
+		my $el   = $hash->{$name};
+		my $line = ('  ' x $indent) . "$name:";
+		if ( ! ref $el ) {
+			$line .= ' ' . $self->_write_scalar( $el );
+			push @lines, $line;
+
+		} elsif ( ref $el eq 'ARRAY' ) {
+			push @lines, $line;
+			push @lines, $self->_write_array( $indent + 1, $el );
+
+		} elsif ( ref $el eq 'HASH' ) {
+			push @lines, $line;
+			push @lines, $self->_write_hash( $indent + 1, $el );
+
+		} else {
+			die "CODE INCOMPLETE";
+		}
+	}
+
+	@lines;
 }
 
 # Set error
@@ -292,7 +339,6 @@ sub errstr {
 	$errstr;
 }
 
-
 1;
 
 __END__
@@ -305,17 +351,16 @@ YAML::Tiny - Read/Write YAML files with as little code as possible
 
 =head1 PREAMBLE
 
-B<WARNING: THIS MODULES IS HIGHLY EXPERIMENTAL AND SUBJECT TO CHANGE
-OR COMPLETE REMOVAL WITHOUT NOTICE>
+B<WARNING: THIS MODULES IS HIGHLY EXPERIMENTAL AND SUBJECT TO CHANGE>
 
 The YAML specification is huge. Like, B<really> huge. It contains all the
 functionality of XML, except with flexibility and choice, which makes it
-easier to read, but will a full specification that is more complex than XML.
+easier to read, but with a full specification that is more complex than XML.
 
 The pure-Perl implementation L<YAML> costs just over 4 megabytes of memory
 to load. Just like with Windows .ini files (3 meg to load) and CSS (3.5 meg
-to load) the situation is just asking for a B<YAML::Tiny> module, to
-implement an incomplete but usable subset of the functionality, in as little
+to load) the situation is just asking for a B<YAML::Tiny> module, an
+incomplete but correct and usable subset of the functionality, in as little
 code as possible.
 
 Now, given the YAML features one would need in order to have something
@@ -340,17 +385,8 @@ free some up.
 At this point, other than unquoted scalars, arrays, hashes and ASCII,
 I promise nothing.
 
-To start, I've (literally) cut-and-pasted a L<Config::Tiny>-like set of
-methods, and I've implemented enough code to handle the following.
-
-  # A comment
-  ---
-  - foo
-  - bar
-
-And that's about it. So do B<not> use this module for anything other
-than experimentation. It's only just getting started, and it might
-dissapear.
+So do B<not> use this module for anything other than experimentation.
+It's only just getting started.
 
 =head1 SYNOPSIS
 
@@ -364,6 +400,8 @@ dissapear.
       three: four
       Foo: Bar
       empty: ~
+    
+    
     
     #############################################
     # In your program
@@ -399,7 +437,8 @@ little code as possible, reducing load time and memory overhead.
 
 Most of the time it is accepted that Perl applications use a lot
 of memory and modules. The B<::Tiny> family of modules is specifically
-intended to provide an ultralight alternative to the standard modules.
+intended to provide an ultralight and zero-dependency alternative to
+the standard modules.
 
 This module is primarily for reading human-written files (like config files)
 and generating very simple human-readable files. Note that I said
@@ -407,7 +446,7 @@ B<human-readable> and not B<geek-readable>. The sort of files that your
 average manager or secretary should be able to look at and make sense of.
 
 L<YAML::Tiny> does not generate comments, it won't necesarily preserve the
-order of your hashs, and it may normalise if reading in and writing out
+order of your hashes, and it will normalise if reading in and writing out
 again.
 
 It only supports a very basic subset of the full YAML specification.

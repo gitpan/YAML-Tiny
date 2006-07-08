@@ -1,16 +1,16 @@
-
-no_index: 
-  directory: 
+abstract: Read/Write YAML files with as little code as possible
+author: 'Adam Kennedy <cpan@ali.as>'
+build_requires:
+  File::Spec: 0.80
+  Test::More: 0.47
+distribution_type: module
+generated_by: Module::Install version 0.63
+license: perl
+name: YAML-Tiny
+no_index:
+  directory:
     - inc
     - t
-generated_by: Module::Install version 0.62
-distribution_type: module
-version: 0.02
-name: YAML-Tiny
-author: Adam Kennedy <cpan@ali.as>
-license: perl
-build_requires: 
-  Test::More: 0.47
-requires: 
-  perl: 5.004
-abstract: Read/Write YAML files with as little code as possible
+requires:
+  perl: 5.005
+version: 0.03

@@ -3,20 +3,9 @@
 # Testing of common META.yml examples
 
 use strict;
-use lib ();
 use File::Spec::Functions ':ALL';
 BEGIN {
 	$| = 1;
-	unless ( $ENV{HARNESS_ACTIVE} ) {
-		require FindBin;
-		$FindBin::Bin = $FindBin::Bin; # Avoid a warning
-		chdir catdir( $FindBin::Bin, updir() );
-		lib->import(
-			catdir('blib', 'lib'),
-			catdir('blib', 'arch'),
-			'lib'
-			);
-	}
 }
 
 use lib catdir('t', 'lib');
@@ -116,7 +105,7 @@ yaml_ok(
 		],
 		modules => [
 			{
-				name      => 'Win32::Job    # i.e. not used, but gets us the libwin32 dist',
+				name      => 'Win32::Job',
 				unpack_to => {
 					APIFile => 'Win32API-File',
 				},
@@ -145,7 +134,7 @@ yaml_ok(
 			'README' => 'README.txt',
 			'LICENSE.txt' => 'LICENSE.txt',
 			'Changes' => 'Release-Notes.txt',
-			'extra\Config.pm' => 'perl\lib\CPAN\Config.pm  # reset this again',
+			'extra\Config.pm' => 'perl\lib\CPAN\Config.pm',
 			'extra\links\Perl-Documentation.url' => 'links\Perl Documentation.url',
 			'extra\links\Perl-Homepage.url' => 'links\Perl Homepage.url',
 			'extra\links\Perl-Mailing-Lists.url' => 'links\Perl Mailing Lists.url',
@@ -155,6 +144,7 @@ yaml_ok(
 		},
 	} ],
 	'vanilla.yml',
+	nosyck => 1,
 );
 
 exit(0);

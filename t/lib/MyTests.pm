@@ -12,15 +12,23 @@ BEGIN {
 
 # Do we have the authorative YAML to test against
 eval { require YAML; };
-my $COMPARE = !! $YAML::VERSION;
+my $COMPARE_YAML = !! $YAML::VERSION;
 
-# 15 tests per call to yaml_ok
-# 5  tests per call to load_ok
+# Do we have YAML::Syck to test against?
+eval { require YAML::Syck; };
+my $COMPARE_SYCK = !! $YAML::Syck::VERSION;
+
+# 22 tests per call to yaml_ok
+# 4  tests per call to load_ok
 sub tests {
+	return ( tests => count(@_) );
+}
+
+sub count {
 	my $yaml_ok = shift || 0;
 	my $load_ok = shift || 0;
-	my $count   = $yaml_ok * 15 + $load_ok * 4;
-	return ( tests => $count );
+	my $count   = $yaml_ok * 22 + $load_ok * 4;
+	return $count;	
 }
 
 sub yaml_ok {
@@ -28,16 +36,19 @@ sub yaml_ok {
 	my $object = shift;
 	my $name   = shift || 'unnamed';
 	bless $object, 'YAML::Tiny';
+	my %options = (@_);
 
 	# If YAML itself is available, test with it first
 	SKIP: {
-		skip( "Skipping compatibility testing (no YAML.pm)", 4 ) unless $COMPARE;
+		unless ( $COMPARE_YAML and ! $options{noyaml} ) {
+			Test::More::skip( "Skipping YAML.pm compatibility testing", 7 );
+		}
 
 		# Test writing with YAML.pm
 		my $yamlpm_out = eval { YAML::Dump( @$object ) };
 		Test::More::is( $@, '', "$name: YAML.pm saves without error" );
 		SKIP: {
-			Test::More::skip( "Shortcutting after failure", 1 ) if $@;
+			Test::More::skip( "Shortcutting after failure", 4 ) if $@;
 			Test::More::ok(
 				!!(defined $yamlpm_out and ! ref $yamlpm_out),
 				"$name: YAML.pm serializes correctly",
@@ -56,6 +67,41 @@ sub yaml_ok {
 		SKIP: {
 			Test::More::skip( "Shortcutting after failure", 1 ) if $@;
 			Test::More::is_deeply( \@yamlpm_in, $object, "$name: YAML.pm parses correctly" );
+		}
+	}
+
+	# If YAML::Syck itself is available, test with it first
+	SKIP: {
+		unless ( $COMPARE_SYCK and ! $options{nosyck} ) {
+			Test::More::skip( "Skipping YAML::Syck compatibility testing", 7 );
+		}
+		unless ( @$object == 1 ) {
+			Test::More::skip( "Skipping YAML::Syck for unsupported feature", 7 );
+		}
+
+		# Test writing with YAML::Syck
+		my $syck_out = eval { YAML::Syck::Dump( @$object ) };
+		Test::More::is( $@, '', "$name: YAML::Syck saves without error" );
+		SKIP: {
+			Test::More::skip( "Shortcutting after failure", 4 ) if $@;
+			Test::More::ok(
+				!!(defined $syck_out and ! ref $syck_out),
+				"$name: YAML::Syck serializes correctly",
+			);
+			my @syck_round = eval { YAML::Syck::Load( $syck_out ) };
+			Test::More::is( $@, '', "$name: YAML::Syck round-trips without error" );
+			Test::More::skip( "Shortcutting after failure", 2 ) if $@;
+			my $round = bless [ @syck_round ], 'YAML::Tiny';
+			Test::More::isa_ok( $round, 'YAML::Tiny' );
+			Test::More::is_deeply( $round, $object, "$name: YAML::Syck round-trips correctly" );		
+		}
+
+		# Test reading with YAML::Syck
+		my @syck_in = eval { YAML::Syck::Load( $string ) };
+		Test::More::is( $@, '', "$name: YAML::Syck loads without error" );
+		SKIP: {
+			Test::More::skip( "Shortcutting after failure", 1 ) if $@;
+			Test::More::is_deeply( \@syck_in, $object, "$name: YAML::Syck parses correctly" );
 		}
 	}
 

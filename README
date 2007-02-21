@@ -127,10 +127,10 @@ METHODS
     $YAML::Tiny::errstr variable, or using the "errstr()" method.
 
 FUNCTIONS
-    YAML::Tiny implements two functions to add compatibility with the YAML
-    API. These should be a drop-in replacement, except that YAML::Tiny will
-    not export functions by default, and so you will need to explicitly
-    import the functions.
+    YAML::Tiny implements a number of functions to add compatibility with
+    the YAML API. These should be a drop-in replacement, except that
+    YAML::Tiny will not export functions by default, and so you will need to
+    explicitly import the functions.
 
   Dump
       my $string = Dump(list-of-Perl-data-structures);
@@ -156,6 +156,17 @@ FUNCTIONS
     It parses a string containing a valid YAML stream into a list of Perl
     data structures.
 
+  freeze() and thaw()
+    Aliases to Dump() and Load() for Storable fans. This will also allow
+    YAML::Tiny to be plugged directly into modules like POE.pm, that use the
+    freeze/thaw API for internal serialization.
+
+  DumpFile(filepath, list)
+    Writes the YAML stream to a file instead of just returning a string.
+
+  LoadFile(filepath)
+    Reads the YAML stream from a file instead of a string.
+
 SUPPORT
     Bugs should be reported via the CPAN bug tracker at
 
@@ -166,7 +177,7 @@ AUTHOR
 
 SEE ALSO
     YAML, YAML::Syck, Config::Tiny, CSS::Tiny,
-    <http://use.perl.org/~Alias/journal/29427>
+    <http://use.perl.org/~Alias/journal/29427>, <http://ali.as/>
 
 COPYRIGHT
     Copyright 2006 - 2007 Adam Kennedy.

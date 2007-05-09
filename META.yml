@@ -1,16 +1,20 @@
-abstract: Read/Write YAML files with as little code as possible
-author: Adam Kennedy <adamk@cpan.org>
-build_requires: 
+---
+abstract: 'Read/Write YAML files with as little code as possible'
+author: 'Adam Kennedy <adamk@cpan.org>'
+build_requires:
   File::Spec: 0.80
   Test::More: 0.47
 distribution_type: module
-generated_by: Module::Install version 0.64
+generated_by: 'Module::Install version 0.67'
 license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.3.html
+  version: 1.3
 name: YAML-Tiny
-no_index: 
-  directory: 
+no_index:
+  directory:
     - inc
     - t
-requires: 
+requires:
   perl: 5.005
-version: 1.04
+version: 1.05

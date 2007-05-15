@@ -5,7 +5,7 @@ use strict;
 
 use vars qw{$VERSION @ISA @EXPORT_OK $errstr};
 BEGIN {
-	$VERSION = '1.05';
+	$VERSION = '1.06';
 	$errstr  = '';
 
 	require Exporter;
@@ -95,7 +95,7 @@ sub read_string {
 		if ( $lines[0] =~ /^---(?:\s*(.+)\s*)?$/ ) {
 			# Handle scalar documents
 			shift @lines;
-			if ( defined $1 ) {
+			if ( defined $1 and $1 !~ /^[#%]YAML:[\d\.]+$/ ) {
 				push @$self, $self->_read_scalar( "$1", [ undef ], \@lines );
 				next;
 			}
@@ -182,6 +182,10 @@ sub _read_array {
 	my ($self, $array, $indent, $lines) = @_;
 
 	while ( @$lines ) {
+		# Check for a new document
+		return 1 if $lines->[0] =~ /^---(?:\s*(.+)\s*)?$/;
+
+		# Check the indent level
 		$lines->[0] =~ /^(\s*)/;
 		if ( length($1) < $indent->[-1] ) {
 			return 1;
@@ -235,6 +239,10 @@ sub _read_hash {
 	my ($self, $hash, $indent, $lines) = @_;
 
 	while ( @$lines ) {
+		# Check for a new document
+		return 1 if $lines->[0] =~ /^---(?:\s*(.+)\s*)?$/;
+
+		# Check the indent level
 		$lines->[0] =~/^(\s*)/;
 		if ( length($1) < $indent->[-1] ) {
 			return 1;
@@ -260,7 +268,7 @@ sub _read_hash {
 				$self->_read_array( $hash->{$key}, [ @$indent, length($1) ], $lines );
 			} elsif ( $lines->[0] =~ /^(\s*)./ ) {
 				my $indent2 = length("$1");
-				if ( $indent->[-1] == $indent2 ) {
+				if ( $indent->[-1] >= $indent2 ) {
 					# Null hash entry
 					$hash->{$key} = undef;
 				} else {

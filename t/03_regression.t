@@ -11,7 +11,7 @@ BEGIN {
 use File::Spec::Functions ':ALL';
 use lib catdir('t', 'lib');
 use MyTests;
-use Test::More tests(5);
+use Test::More tests(7);
 use YAML::Tiny;
 
 
@@ -53,6 +53,25 @@ yaml_ok(
 	'simple_multiline',
 	nosyck => 1,
 );
+
+# Piped multi-line scalar
+yaml_ok( <<'END_YAML', [ [ "foo\nbar\n", 1 ] ], 'indented', nosyck => 1 );
+---
+- |
+  foo
+  bar
+- 1
+END_YAML
+
+# ... with a pointless hyphen
+yaml_ok( <<'END_YAML', [ [ "foo\nbar", 1 ] ], 'indented', nosyck => 1 );
+---
+- |-
+  foo
+  bar
+- 1
+END_YAML
+
 
 
 

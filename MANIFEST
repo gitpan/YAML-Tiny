@@ -21,6 +21,7 @@ t/12_plagger.t
 t/13_perl_smith.t
 t/14_yaml_org.t
 t/99_author.t
+t/data/HTML-WebDAO.yml
 t/data/sample.yml
 t/data/Template-Provider-Unicode-Japanese.yml
 t/data/vanilla.yml

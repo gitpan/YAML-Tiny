@@ -20,9 +20,11 @@ t/11_meta_yml.t
 t/12_plagger.t
 t/13_perl_smith.t
 t/14_yaml_org.t
+t/15_multibyte.t
 t/99_author.t
 t/data/HTML-WebDAO.yml
+t/data/multibyte.yml
 t/data/sample.yml
 t/data/Template-Provider-Unicode-Japanese.yml
 t/data/vanilla.yml
-t/lib/MyTests.pm
+t/lib/Test.pm

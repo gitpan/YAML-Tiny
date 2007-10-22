@@ -10,7 +10,7 @@ BEGIN {
 
 use File::Spec::Functions ':ALL';
 use t::lib::Test;
-use Test::More tests(17);
+use Test::More tests(18);
 use YAML::Tiny;
 
 
@@ -252,6 +252,23 @@ yaml_ok(
 END_YAML
 	[ [ 'foo', undef, undef ] ],
 	'empty array keys',
+	noyaml => 1,
+);
+
+
+
+
+
+#####################################################################
+# Comment on the Document Line
+
+yaml_ok(
+	<<'END_YAML',
+--- # Comment
+foo: bar
+END_YAML
+	[ { foo => 'bar' } ],
+	'comment header',
 	noyaml => 1,
 );
 

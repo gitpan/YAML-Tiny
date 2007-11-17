@@ -1,13 +1,12 @@
 --- #YAML:1.0
 name:                YAML-Tiny
-version:             1.17
+version:             1.19
 abstract:            Read/Write YAML files with as little code as possible
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.32
 distribution_type:   module
 requires:     
     File::Spec:                    0.80
-    perl:                          5.004
     Test::More:                    0.47
 meta-spec:
     url:     http://module-build.sourceforge.net/META-spec-v1.2.html

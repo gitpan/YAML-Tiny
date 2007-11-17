@@ -1,13 +1,11 @@
 use strict;
-use vars qw{$VERSION};
 BEGIN {
 	require 5.003_96;
-	$VERSION = '1.17';
+	$main::VERSION = '1.19';
 }
 use ExtUtils::MakeMaker;
 
 my $PREREQ_PM = {
-	'perl'       => '5.004',
 	'File::Spec' => '0.80',
 	'Test::More' => '0.47',
 };
@@ -19,7 +17,7 @@ if ( $ENV{AUTOMATED_TESTING} ) {
 WriteMakefile(
 	NAME      => 'YAML::Tiny',
 	ABSTRACT  => 'Read/Write YAML files with as little code as possible',
-	VERSION   => $VERSION,
+	VERSION   => $main::VERSION,
 	PREREQ_PM => $PREREQ_PM,
 	($] >= 5.005 ? (
 		AUTHOR  => 'Adam Kennedy <adamk@cpan.org>',
@@ -28,3 +26,4 @@ WriteMakefile(
 		LICENSE => 'perl',
 	) : ()),
 );
+

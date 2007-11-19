@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                YAML-Tiny
-version:             1.19
+version:             1.20
 abstract:            Read/Write YAML files with as little code as possible
 license:             perl
 generated_by:        ExtUtils::MakeMaker version 6.32

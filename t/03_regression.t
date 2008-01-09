@@ -10,7 +10,7 @@ BEGIN {
 
 use File::Spec::Functions ':ALL';
 use t::lib::Test;
-use Test::More tests(19, 0, 6);
+use Test::More tests(19, 0, 10);
 use YAML::Tiny qw{
 	Load     Dump
 	LoadFile DumpFile
@@ -235,10 +235,10 @@ END_YAML
 yaml_ok(
 	<<'END_YAML',
 ---
-slash: '\'
+slash: '\\'
 name: 'O''Reilly'
 END_YAML
-	[ { slash => "\\", name => "O'Reilly" } ],
+	[ { slash => "\\\\", name => "O'Reilly" } ],
 	'single quote subtleties',
 );
 
@@ -305,5 +305,32 @@ END_YAML
 	[ { foo => "foo\\\n\tbar" } ],
 	'special characters',
 );
+
+
+
+
+
+
+#####################################################################
+# Circular Reference Protection
+
+SCOPE: {
+	my $foo = { a => 'b' };
+	my $bar = [ $foo, 2 ];
+	$foo->{c} = $bar;
+	my $circ = YAML::Tiny->new( [ $foo, $bar ] );
+	isa_ok( $circ, 'YAML::Tiny' );
+
+	# When we try to serialize, it should NOT infinite loop
+	my $string = undef;
+	   $string = eval { $circ->write_string; };
+	is( $string, undef, '->write_string does not return a value' );
+	ok( $@, 'Error string is defined' );
+	like(
+		$@,
+		qr/does not support circular references/,
+		'Got the expected error message',
+	);
+}	
 
 exit(0);

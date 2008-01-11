@@ -94,6 +94,7 @@ DESCRIPTION
     the order of your YAML data. But it should round-trip from Perl
     structure to file and back again just fine.
 
+YAML TINY SPECIFICATION
 METHODS
   new
     The constructor "new" creates and returns an empty "YAML::Tiny" object.

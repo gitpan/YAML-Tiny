@@ -4,7 +4,7 @@ use strict;
 BEGIN {
 	require 5.004;
 	require Exporter;
-	$YAML::Tiny::VERSION   = '1.23';
+	$YAML::Tiny::VERSION   = '1.24_01';
 	$YAML::Tiny::errstr    = '';
 	@YAML::Tiny::ISA       = qw{ Exporter  };
 	@YAML::Tiny::EXPORT_OK = qw{
@@ -73,13 +73,16 @@ sub read_string {
 	my @lines = grep { ! /^\s*(?:\#.*)?$/ }
 	            split /(?:\015{1,2}\012|\015|\012)/, shift;
 
+	# Strip the initial YAML header
+	@lines and $lines[0] =~ /^\%YAML[: ][\d\.]+.*$/ and shift @lines;
+
 	# A nibbling parser
 	while ( @lines ) {
 		# Do we have a document header?
 		if ( $lines[0] =~ /^---\s*(?:(.+)\s*)?$/ ) {
 			# Handle scalar documents
 			shift @lines;
-			if ( defined $1 and $1 !~ /^(?:\#.+|\%YAML:[\d\.]+)$/ ) {
+			if ( defined $1 and $1 !~ /^(?:\#.+|\%YAML[: ][\d\.]+)$/ ) {
 				push @$self, $self->_read_scalar( "$1", [ undef ], \@lines );
 				next;
 			}
@@ -243,7 +246,7 @@ sub _read_hash {
 		return 1 if $lines->[0] =~ /^---\s*(?:(.+)\s*)?$/;
 
 		# Check the indent level
-		$lines->[0] =~/^(\s*)/;
+		$lines->[0] =~ /^(\s*)/;
 		if ( length($1) < $indent->[-1] ) {
 			return 1;
 		} elsif ( length($1) > $indent->[-1] ) {
@@ -251,8 +254,8 @@ sub _read_hash {
 		}
 
 		# Get the key
-		unless ( $lines->[0] =~ s/^\s*([^\'\"][^\n]*?)\s*:(\s+|$)// ) {
-			die "Bad hash line";
+		unless ( $lines->[0] =~ s/^\s*([^\'\" ][^\n]*?)\s*:(\s+|$)// ) {
+			die "Bad or unsupported hash line";
 		}
 		my $key = $1;
 
@@ -624,6 +627,10 @@ compiler).
 To restate, L<YAML::Tiny> does B<not> preserve your comments, whitespace, or
 the order of your YAML data. But it should round-trip from Perl structure
 to file and back again just fine.
+
+=head1 YAML TINY SPECIFICATION
+
+
 
 =head1 METHODS
 

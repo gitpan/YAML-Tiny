@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:                YAML-Tiny
-version:             1.23
+version:             1.24_01
 abstract:            Read/Write YAML files with as little code as possible
 license:             perl
 author:              

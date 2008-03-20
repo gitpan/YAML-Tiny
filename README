@@ -128,7 +128,7 @@ YAML TINY SPECIFICATION
 
   2. Introduction
     YAML Tiny supports three data structures. These are scalars (in a
-    variety or forms), block-form sequences and block-form mappings.
+    variety of forms), block-form sequences and block-form mappings.
     Flow-style sequences and mappings are not supported, with some minor
     exceptions detailed later.
 
@@ -163,8 +163,8 @@ YAML TINY SPECIFICATION
     representation graph is thus directed but (unlike the main YAML
     specification) acyclic.
 
-    Circular references/pointers are not possible as a result, and any YAML
-    Tiny serializer detecting a circulars should error with an appropriate
+    Circular references/pointers are not possible, and any YAML Tiny
+    serializer detecting a circulars should error with an appropriate
     message.
 
     Presentation Stream
@@ -372,6 +372,18 @@ YAML TINY SPECIFICATION
 
     Here endeth the specification.
 
+  Additional Perl-Specific Notes
+    For some Perl applications, it's important to know if you really have a
+    number and not a string.
+
+    That is, in some contexts is important that 3 the number is distinctive
+    from "3" the string.
+
+    Because even Perl itself is not trivially able to understand the
+    difference (certainly without XS-based modules) Perl implementations of
+    the YAML Tiny specification are not required to retain the
+    distinctiveness of 3 vs "3".
+
 METHODS
   new
     The constructor "new" creates and returns an empty "YAML::Tiny" object.
@@ -459,7 +471,7 @@ SEE ALSO
     <http://use.perl.org/~Alias/journal/29427>, <http://ali.as/>
 
 COPYRIGHT
-    Copyright 2006 - 2007 Adam Kennedy.
+    Copyright 2006 - 2008 Adam Kennedy.
 
     This program is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.

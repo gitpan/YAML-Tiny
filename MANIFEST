@@ -20,9 +20,11 @@ t/98_pod.t
 t/99_pmv.t
 t/data/HTML-WebDAO.yml
 t/data/multibyte.yml
+t/data/one.yml
 t/data/sample.yml
 t/data/Template-Provider-Unicode-Japanese.yml
 t/data/toolbar.yml
+t/data/two.yml
 t/data/vanilla.yml
 t/lib/Test.pm
 META.yml                                 Module meta-data (added by MakeMaker)

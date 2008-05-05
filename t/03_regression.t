@@ -10,7 +10,7 @@ BEGIN {
 
 use File::Spec::Functions ':ALL';
 use t::lib::Test;
-use Test::More tests(30, 0, 10);
+use Test::More tests(31, 0, 10);
 use YAML::Tiny qw{
 	Load     Dump
 	LoadFile DumpFile
@@ -267,7 +267,11 @@ arr:
   - ~
   - 'bar'  
 END_YAML
-	[ { abstract => 'Generate fractal curves', foo => undef, arr => [ 'foo', undef, 'bar' ] } ],
+	[ {
+		abstract => 'Generate fractal curves',
+		foo      => undef,
+		arr      => [ 'foo', undef, 'bar' ],
+	} ],
 	'trailing whitespace',
 );
 
@@ -532,4 +536,19 @@ yaml_ok(
 END_YAML
 	[ [ 'value', '><' ] ],
 	'Pathological >< case',
+);
+
+
+
+
+
+#####################################################################
+# Special Characters
+
+yaml_ok(
+	<<'END_YAML',
+---
+- "Ingy d\xC3\xB6t Net"
+END_YAML
+	[ [ "Ingy d\xC3\xB6t Net" ] ],
 );

@@ -8,6 +8,7 @@ t/01_compile.t
 t/02_basic.t
 t/03_regression.t
 t/04_scalar.t
+t/05_export.t
 t/11_meta_yml.t
 t/12_plagger.t
 t/13_perl_smith.t
@@ -17,6 +18,7 @@ t/16_nullrefs.t
 t/17_toolbar.t
 t/18_tap.t
 t/19_errors.t
+t/20_subclass.t
 t/97_meta.t
 t/98_pod.t
 t/99_pmv.t

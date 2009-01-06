@@ -4,7 +4,7 @@ use strict;
 BEGIN {
 	require 5.004;
 	require Exporter;
-	$YAML::Tiny::VERSION   = '1.35';
+	$YAML::Tiny::VERSION   = '1.36';
 	$YAML::Tiny::errstr    = '';
 	@YAML::Tiny::ISA       = qw{ Exporter  };
 	@YAML::Tiny::EXPORT = qw{
@@ -233,6 +233,16 @@ sub _read_array {
 			} else {
 				die "YAML::Tiny does not support the line '$lines->[0]'";
 			}
+
+		} elsif ( defined $indent->[-2] and $indent->[-1] == $indent->[-2] ) {
+			# This is probably a structure like the following...
+			# ---
+			# foo:
+			# - list
+			# bar: value
+			#
+			# ... so lets return and let the hash parser handle it
+			return 1;
 
 		} else {
 			die "YAML::Tiny does not support the line '$lines->[0]'";
@@ -1049,7 +1059,7 @@ L<http://use.perl.org/~Alias/journal/29427>, L<http://ali.as/>
 
 =head1 COPYRIGHT
 
-Copyright 2006 - 2008 Adam Kennedy.
+Copyright 2006 - 2009 Adam Kennedy.
 
 This program is free software; you can redistribute
 it and/or modify it under the same terms as Perl itself.

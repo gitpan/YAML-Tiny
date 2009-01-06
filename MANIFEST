@@ -26,6 +26,7 @@ t/data/HTML-WebDAO.yml
 t/data/multibyte.yml
 t/data/one.yml
 t/data/sample.yml
+t/data/Spreadsheet-Read.yml
 t/data/Template-Provider-Unicode-Japanese.yml
 t/data/toolbar.yml
 t/data/two.yml

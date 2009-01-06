@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               YAML-Tiny
-version:            1.35
+version:            1.36
 abstract:           Read/Write YAML files with as little code as possible
 author:
     - Adam Kennedy <adamk@cpan.org>

@@ -19,6 +19,7 @@ t/17_toolbar.t
 t/18_tap.t
 t/19_errors.t
 t/20_subclass.t
+t/21_bom.t
 t/97_meta.t
 t/98_pod.t
 t/99_pmv.t
@@ -30,6 +31,7 @@ t/data/Spreadsheet-Read.yml
 t/data/Template-Provider-Unicode-Japanese.yml
 t/data/toolbar.yml
 t/data/two.yml
+t/data/utf_16_le_bom.yml
 t/data/vanilla.yml
 t/lib/Test.pm
 META.yml                                 Module meta-data (added by MakeMaker)

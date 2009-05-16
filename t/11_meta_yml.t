@@ -86,7 +86,7 @@ generated_by: ExtUtils::MakeMaker version 6.30
 END_YAML
 	[ {
 		name              => 'ITS-SIN-FIDS-Content-XML',
-		version           => 0.01,
+		version           => "0.01", # this kludge is to prevent floating point comparison errors
 		version_from      => 'lib/ITS/SIN/FIDS/Content/XML.pm',
 		installdirs       => 'site',
 		requires          => {
@@ -189,6 +189,7 @@ END_YAML
 		generated_by => 'ExtUtils::MakeMaker version 6.17',
 	} ],
 	'Acme-Time-Baby',
+	noyamlperl => 1,
 );
 
 
@@ -261,6 +262,7 @@ SCOPE: {
 			version => '1.2.1',
 		} ],
 		'Template-Provider-Unicode-Japanese',
+		noyamlperl => 1,
 	);
 }
 
@@ -388,8 +390,7 @@ SCOPE: {
 			'abstract' => 'Meta-Wrapper for reading spreadsheet data'
 		} ],
 		'Spreadsheet-Read',
-		noyamlpm => 1,
+		noyamlpm   => 1,
+		noyamlperl => 1,
 	);
 }
-
-exit(0);

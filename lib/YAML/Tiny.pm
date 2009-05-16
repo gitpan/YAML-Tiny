@@ -1,17 +1,21 @@
 package YAML::Tiny;
 
 use strict;
-use Carp ();
+use Carp 'croak';
 
 # UTF Support?
 sub HAVE_UTF8 () { $] >= 5.007003 }
 BEGIN {
-	require utf8 if HAVE_UTF8;
+	if ( HAVE_UTF8 ) {
+		# The string eval helps hide this from Test::MinimumVersion
+		eval "require utf8;";
+		die "Failed to load UTF-8 support" if $@;
+	}
 
 	# Class structure
 	require 5.004;
 	require Exporter;
-	$YAML::Tiny::VERSION   = '1.37';
+	$YAML::Tiny::VERSION   = '1.38';
 	@YAML::Tiny::ISA       = qw{ Exporter  };
 	@YAML::Tiny::EXPORT    = qw{ Load Dump };
 	@YAML::Tiny::EXPORT_OK = qw{ LoadFile DumpFile freeze thaw };
@@ -40,6 +44,13 @@ my %UNESCAPES = (
 	r => "\x0d", e => "\x1b", '\\' => '\\',
 );
 
+
+
+
+
+#####################################################################
+# Implementation
+
 # Create an empty YAML::Tiny object
 sub new {
 	my $class = shift;
@@ -60,11 +71,11 @@ sub read {
 	local $/ = undef;
 	local *CFG;
 	unless ( open(CFG, $file) ) {
-		return $class->_error( "Failed to open file '$file': $!" );
+		return $class->_error("Failed to open file '$file': $!");
 	}
 	my $contents = <CFG>;
 	unless ( close(CFG) ) {
-		return $class->_error( "Failed to close file '$file': $!" );
+		return $class->_error("Failed to close file '$file': $!");
 	}
 
 	$class->read_string( $contents );
@@ -74,7 +85,10 @@ sub read {
 sub read_string {
 	my $class  = ref $_[0] ? ref shift : shift;
 	my $self   = bless [], $class;
-	my $string = defined($_[0]) ? shift : return undef;
+	my $string = $_[0];
+	unless ( defined $string ) {
+		return $self->_error("Did not provide a string to load");
+	}
 
 	# Byte order marks
 	# NOTE: Keeping this here to educate maintainers
@@ -140,7 +154,7 @@ sub read_string {
 			$self->_read_hash( $document, [ length($1) ], \@lines );
 
 		} else {
-			die "YAML::Tiny does not support the line '$lines[0]'";
+			croak("YAML::Tiny failed to classify the line '$lines[0]'");
 		}
 	}
 
@@ -174,7 +188,9 @@ sub _read_scalar {
 	}
 
 	# Special cases
-	die "Unsupported YAML feature" if $string =~ /^[\'\"!&]/;
+	if ( $string =~ /^[\'\"!&]/ ) {
+		croak("YAML::Tiny does not support a feature in line '$lines->[0]'");
+	}
 	return {} if $string eq '{}';
 	return [] if $string eq '[]';
 
@@ -182,13 +198,13 @@ sub _read_scalar {
 	return $string unless $string =~ /^[>|]/;
 
 	# Error
-	die "Multi-line scalar content missing" unless @$lines;
+	croak("YAML::Tiny failed to find multi-line scalar content") unless @$lines;
 
 	# Check the indent depth
 	$lines->[0]   =~ /^(\s*)/;
 	$indent->[-1] = length("$1");
 	if ( defined $indent->[-2] and $indent->[-1] <= $indent->[-2] ) {
-		die "Illegal line indenting";
+		croak("YAML::Tiny found bad indenting in line '$lines->[0]'");
 	}
 
 	# Pull the lines
@@ -222,7 +238,7 @@ sub _read_array {
 		if ( length($1) < $indent->[-1] ) {
 			return 1;
 		} elsif ( length($1) > $indent->[-1] ) {
-			die "Hash line over-indented";
+			croak("YAML::Tiny found bad indenting in line '$lines->[0]'");
 		}
 
 		if ( $lines->[0] =~ /^(\s*\-\s+)[^\'\"]\S*\s*:(?:\s+|$)/ ) {
@@ -259,7 +275,7 @@ sub _read_array {
 				$self->_read_hash( $array->[-1], [ @$indent, length("$1") ], $lines );
 
 			} else {
-				die "YAML::Tiny does not support the line '$lines->[0]'";
+				croak("YAML::Tiny failed to classify line '$lines->[0]'");
 			}
 
 		} elsif ( defined $indent->[-2] and $indent->[-1] == $indent->[-2] ) {
@@ -273,7 +289,7 @@ sub _read_array {
 			return 1;
 
 		} else {
-			die "YAML::Tiny does not support the line '$lines->[0]'";
+			croak("YAML::Tiny failed to classify line '$lines->[0]'");
 		}
 	}
 
@@ -298,13 +314,15 @@ sub _read_hash {
 		if ( length($1) < $indent->[-1] ) {
 			return 1;
 		} elsif ( length($1) > $indent->[-1] ) {
-			die "Hash line over-indented";
+			croak("YAML::Tiny found bad indenting in line '$lines->[0]'");
 		}
 
 		# Get the key
 		unless ( $lines->[0] =~ s/^\s*([^\'\" ][^\n]*?)\s*:(\s+|$)// ) {
-			die "Unsupported YAML feature" if $lines->[0] =~ /^\s*[?\'\"]/;
-			die "Bad or unsupported hash line";
+			if ( $lines->[0] =~ /^\s*[?\'\"]/ ) {
+				croak("YAML::Tiny does not support a feature in line '$lines->[0]'");
+			}
+			croak("YAML::Tiny failed to classify line '$lines->[0]'");
 		}
 		my $key = $1;
 
@@ -341,9 +359,7 @@ sub _read_hash {
 # Save an object to a file
 sub write {
 	my $self = shift;
-	my $file = shift or return $self->_error(
-		'No file name provided'
-		);
+	my $file = shift or return $self->_error('No file name provided');
 
 	# Write it to the file
 	open( CFG, '>' . $file ) or return $self->_error(
@@ -391,7 +407,7 @@ sub write_string {
 			push @lines, $self->_write_hash( $cursor, $indent, {} );
 
 		} else {
-			Carp::croak("Cannot serialize " . ref($cursor));
+			croak("Cannot serialize " . ref($cursor));
 		}
 	}
 
@@ -517,8 +533,10 @@ sub Dump {
 }
 
 sub Load {
-	my $self = YAML::Tiny->read_string(@_)
-		or Carp::croak("Failed to load YAML document from string");
+	my $self = YAML::Tiny->read_string(@_);
+	unless ( $self ) {
+		croak("Failed to load YAML document from string");
+	}
 	if ( wantarray ) {
 		return @$self;
 	} else {
@@ -538,12 +556,14 @@ sub DumpFile {
 }
 
 sub LoadFile {
-	my $self = YAML::Tiny->read($_[0])
-		or Carp::croak("Failed to load YAML document from '" . ($_[0] || '') . "'");
+	my $self = YAML::Tiny->read($_[0]);
+	unless ( $self ) {
+		croak("Failed to load YAML document from '" . ($_[0] || '') . "'");
+	}
 	if ( wantarray ) {
 		return @$self;
 	} else {
-		# To match YAML.pm, return the last document
+		# Return only the last document to match YAML.pm, 
 		return $self->[-1];
 	}
 }

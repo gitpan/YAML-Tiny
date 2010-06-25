@@ -142,7 +142,20 @@ YAML TINY SPECIFICATION
     Scalars are supported via the plain style, single quote and double
     quote, as well as literal-style and folded-style multi-line scalars.
 
-    The use of tags is not supported.
+    The use of explicit tags is not supported.
+
+    The use of "null" type scalars is supported via the ~ character.
+
+    The use of "bool" type scalars is not supported.
+
+    However, serializer implementations should take care to explicitly
+    escape strings that match a "bool" keyword in the following set to
+    prevent other implementations that do support "bool" accidentally
+    reading a string as a boolean
+
+      y|Y|yes|Yes|YES|n|N|no|No|NO
+      |true|True|TRUE|false|False|FALSE
+      |on|On|ON|off|Off|OFF
 
     The use of anchors and aliases is not supported.
 
@@ -166,8 +179,8 @@ YAML TINY SPECIFICATION
     specification) acyclic.
 
     Circular references/pointers are not possible, and any YAML Tiny
-    serializer detecting a circulars should error with an appropriate
-    message.
+    serializer detecting a circular reference should error with an
+    appropriate message.
 
     Presentation Stream
 
@@ -337,7 +350,7 @@ YAML TINY SPECIFICATION
 
     Support for node anchors is not required.
 
-    Supprot for node tags is not required.
+    Support for node tags is not required.
 
     Support for alias nodes is not required.
 
@@ -473,7 +486,7 @@ SEE ALSO
     <http://use.perl.org/~Alias/journal/29427>, <http://ali.as/>
 
 COPYRIGHT
-    Copyright 2006 - 2009 Adam Kennedy.
+    Copyright 2006 - 2010 Adam Kennedy.
 
     This program is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.

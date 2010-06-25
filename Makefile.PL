@@ -1,7 +1,7 @@
 use strict;
 BEGIN {
 	require 5.003_96;
-	$main::VERSION = '1.41';
+	$main::VERSION = '1.42';
 }
 use ExtUtils::MakeMaker;
 
@@ -13,10 +13,10 @@ WriteMakefile1(
 		'File::Spec' => '0.80',
 		'Test::More' => '0.47',
 		($ENV{AUTOMATED_TESTING} ? (
-			'YAML'       => '0.68',
+			'YAML'       => '0.71',
 			'YAML::Perl' => '0.02',
-			'YAML::Syck' => '1.07',
-			'YAML::XS'   => '0.29',
+			'YAML::Syck' => '1.10',
+			'YAML::XS'   => '0.33',
 		) : ()),
 	},
 	AUTHOR  => 'Adam Kennedy <adamk@cpan.org>',
@@ -28,17 +28,20 @@ WriteMakefile1(
 			bugtracker => 'http://rt.cpan.org/NoAuth/ReportBug.html?Queue=YAML-Tiny',
 		},
 	},
+	(-d 'xt' and $ENV{AUTOMATED_TESTING} || $ENV{RELEASE_TESTING}) ? (
+		test => {
+			TESTS => 't/*.t xt/*.t',
+		},
+	) : (),
 );
 
-sub WriteMakefile1 {  #Written by Alexandr Ciornii, version 0.20
+sub WriteMakefile1 {  #Written by Alexandr Ciornii, version 0.21
 	my %params=@_;
 	my $eumm_version=$ExtUtils::MakeMaker::VERSION;
 	$eumm_version=eval $eumm_version;
 	die "EXTRA_META is deprecated" if exists $params{EXTRA_META};
 	die "License not specified" if not exists $params{LICENSE};
-	if ($params{BUILD_REQUIRES}) { #and $eumm_version < 6.5503
-		#Should be modified in future when EUMM will
-		#correctly support BUILD_REQUIRES.
+	if ($params{BUILD_REQUIRES} and $eumm_version < 6.5503) {
 		#EUMM 6.5502 has problems with BUILD_REQUIRES
 		$params{PREREQ_PM}={ %{$params{PREREQ_PM} || {}} , %{$params{BUILD_REQUIRES}} };
 		delete $params{BUILD_REQUIRES};

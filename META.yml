@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               YAML-Tiny
-version:            1.41
+version:            1.42
 abstract:           Read/Write YAML files with as little code as possible
 author:
     - Adam Kennedy <adamk@cpan.org>
@@ -9,11 +9,10 @@ distribution_type:  module
 configure_requires:
     ExtUtils::MakeMaker:  0
 build_requires:
-    ExtUtils::MakeMaker:  0
-requires:
     File::Spec:  0.80
-    perl:        5.004
     Test::More:  0.47
+requires:
+    perl:  5.004
 resources:
     bugtracker:  http://rt.cpan.org/NoAuth/ReportBug.html?Queue=YAML-Tiny
     repository:  http://svn.ali.as/cpan/trunk/YAML-Tiny
@@ -21,7 +20,7 @@ no_index:
     directory:
         - t
         - inc
-generated_by:       ExtUtils::MakeMaker version 6.50
+generated_by:       ExtUtils::MakeMaker version 6.56
 meta-spec:
     url:      http://module-build.sourceforge.net/META-spec-v1.4.html
     version:  1.4

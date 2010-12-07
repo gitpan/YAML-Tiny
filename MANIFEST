@@ -20,6 +20,7 @@ t/18_tap.t
 t/19_errors.t
 t/20_subclass.t
 t/21_bom.t
+t/22_comments.t
 t/data/HTML-WebDAO.yml
 t/data/multibyte.yml
 t/data/one.yml

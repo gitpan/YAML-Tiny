@@ -13,9 +13,13 @@ PREAMBLE
     module, an incomplete but correct and usable subset of the
     functionality, in as little code as possible.
 
-    Like the other "::Tiny" modules, YAML::Tiny will have no non-core
-    dependencies, not require a compiler, and be back-compatible to at least
-    perl 5.005_03, and ideally 5.004.
+    Like the other "::Tiny" modules, YAML::Tiny has no non-core
+    dependencies, does not require a compiler to install, is back-compatible
+    to Perl 5.004, and can be inlined into other modules if needed.
+
+    In exchange for this adding this extreme flexibility, it provides
+    support for only a limited subset of YAML. But the subset supported
+    contains most of the features for the more common usese of YAML.
 
 SYNOPSIS
         #############################################
@@ -50,7 +54,7 @@ SYNOPSIS
     # Changing data
         $yaml->[0]->{newsection} = { this => 'that' }; # Add a section
         $yaml->[0]->{section}->{Foo} = 'Not Bar!';     # Change a value
-        delete $yaml->[0]->{section};                  # Delete a value or section
+        delete $yaml->[0]->{section};                  # Delete a value
         
     # Add an entire document
         $yaml->[1] = [ 'foo', 'bar', 'baz' ];
@@ -109,23 +113,23 @@ YAML TINY SPECIFICATION
   1. Introduction and Goals
     The purpose of the YAML Tiny specification is to describe a useful
     subset of the YAML specification that can be used for typical
-    document-oriented uses such as configuration files and simple data
+    document-oriented use cases such as configuration files and simple data
     structure dumps.
 
     Many specification elements that add flexibility or extensibility are
     intentionally removed, as is support for complex datastructures, class
     and object-orientation.
 
-    In general, YAML Tiny targets only those data structures available in
-    JSON, with the additional limitation that only simple keys are
-    supported.
+    In general, the YAML Tiny language targets only those data structures
+    available in JSON, with the additional limitation that only simple keys
+    are supported.
 
     As a result, all possible YAML Tiny documents should be able to be
     transformed into an equivalent JSON document, although the reverse is
     not necesarily true (but will be true in simple cases).
 
     As a result of these simplifications the YAML Tiny specification should
-    be implementable in a relatively small amount of code in any language
+    be implementable in a (relatively) small amount of code in any language
     that supports Perl Compatible Regular Expressions (PCRE).
 
   2. Introduction
@@ -404,8 +408,8 @@ METHODS
     The constructor "new" creates and returns an empty "YAML::Tiny" object.
 
   read $filename
-    The "read" constructor reads a YAML file, and returns a new "YAML::Tiny"
-    object containing the contents of the file.
+    The "read" constructor reads a YAML file from a file name, and returns a
+    new "YAML::Tiny" object containing the parsed content.
 
     Returns the object on success, or "undef" on error.
 
@@ -415,9 +419,10 @@ METHODS
     and you should not rely on using the $! variable.
 
   read_string $string;
-    The "read_string" method takes as argument the contents of a YAML file
-    (a YAML document) as a string and returns the "YAML::Tiny" object for
-    it.
+    The "read" constructor reads a YAML file from a file name, and returns a
+    new "YAML::Tiny" object containing the parsed content.
+
+    Returns the object on success, or "undef" on error.
 
   write $filename
     The "write" method generates the file content for the properties, and

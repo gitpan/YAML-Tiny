@@ -15,7 +15,8 @@ BEGIN {
 	require 5.004;
 	require Exporter;
 	require Carp;
-	$YAML::Tiny::VERSION   = '1.44';
+	$YAML::Tiny::VERSION   = '1.45_02';
+	$YAML::Tiny::VERSION   = eval $YAML::Tiny::VERSION;
 	@YAML::Tiny::ISA       = qw{ Exporter  };
 	@YAML::Tiny::EXPORT    = qw{ Load Dump };
 	@YAML::Tiny::EXPORT_OK = qw{ LoadFile DumpFile freeze thaw };
@@ -94,79 +95,87 @@ sub read_string {
 	my $class  = ref $_[0] ? ref shift : shift;
 	my $self   = bless [], $class;
 	my $string = $_[0];
-	unless ( defined $string ) {
-		return $self->_error("Did not provide a string to load");
-	}
-
-	# Byte order marks
-	# NOTE: Keeping this here to educate maintainers
-	# my %BOM = (
-	#     "\357\273\277" => 'UTF-8',
-	#     "\376\377"     => 'UTF-16BE',
-	#     "\377\376"     => 'UTF-16LE',
-	#     "\377\376\0\0" => 'UTF-32LE'
-	#     "\0\0\376\377" => 'UTF-32BE',
-	# );
-	if ( $string =~ /^(?:\376\377|\377\376|\377\376\0\0|\0\0\376\377)/ ) {
-		return $self->_error("Stream has a non UTF-8 BOM");
-	} else {
-		# Strip UTF-8 bom if found, we'll just ignore it
-		$string =~ s/^\357\273\277//;
-	}
-
-	# Try to decode as utf8
-	utf8::decode($string) if HAVE_UTF8;
-
-	# Check for some special cases
-	return $self unless length $string;
-	unless ( $string =~ /[\012\015]+\z/ ) {
-		return $self->_error("Stream does not end with newline character");
-	}
-
-	# Split the file into lines
-	my @lines = grep { ! /^\s*(?:\#.*)?\z/ }
-	            split /(?:\015{1,2}\012|\015|\012)/, $string;
-
-	# Strip the initial YAML header
-	@lines and $lines[0] =~ /^\%YAML[: ][\d\.]+.*\z/ and shift @lines;
-
-	# A nibbling parser
-	while ( @lines ) {
-		# Do we have a document header?
-		if ( $lines[0] =~ /^---\s*(?:(.+)\s*)?\z/ ) {
-			# Handle scalar documents
-			shift @lines;
-			if ( defined $1 and $1 !~ /^(?:\#.+|\%YAML[: ][\d\.]+)\z/ ) {
-				push @$self, $self->_read_scalar( "$1", [ undef ], \@lines );
-				next;
-			}
+	eval {
+		unless ( defined $string ) {
+			die \"Did not provide a string to load";
 		}
 
-		if ( ! @lines or $lines[0] =~ /^(?:---|\.\.\.)/ ) {
-			# A naked document
-			push @$self, undef;
-			while ( @lines and $lines[0] !~ /^---/ ) {
-				shift @lines;
-			}
-
-		} elsif ( $lines[0] =~ /^\s*\-/ ) {
-			# An array at the root
-			my $document = [ ];
-			push @$self, $document;
-			$self->_read_array( $document, [ 0 ], \@lines );
-
-		} elsif ( $lines[0] =~ /^(\s*)\S/ ) {
-			# A hash at the root
-			my $document = { };
-			push @$self, $document;
-			$self->_read_hash( $document, [ length($1) ], \@lines );
-
+		# Byte order marks
+		# NOTE: Keeping this here to educate maintainers
+		# my %BOM = (
+		#     "\357\273\277" => 'UTF-8',
+		#     "\376\377"     => 'UTF-16BE',
+		#     "\377\376"     => 'UTF-16LE',
+		#     "\377\376\0\0" => 'UTF-32LE'
+		#     "\0\0\376\377" => 'UTF-32BE',
+		# );
+		if ( $string =~ /^(?:\376\377|\377\376|\377\376\0\0|\0\0\376\377)/ ) {
+			die \"Stream has a non UTF-8 BOM";
 		} else {
-			Carp::croak("YAML::Tiny failed to classify the line '$lines[0]'");
+			# Strip UTF-8 bom if found, we'll just ignore it
+			$string =~ s/^\357\273\277//;
 		}
+
+		# Try to decode as utf8
+		utf8::decode($string) if HAVE_UTF8;
+
+		# Check for some special cases
+		return $self unless length $string;
+		unless ( $string =~ /[\012\015]+\z/ ) {
+			die \"Stream does not end with newline character";
+		}
+
+		# Split the file into lines
+		my @lines = grep { ! /^\s*(?:\#.*)?\z/ }
+			    split /(?:\015{1,2}\012|\015|\012)/, $string;
+
+		# Strip the initial YAML header
+		@lines and $lines[0] =~ /^\%YAML[: ][\d\.]+.*\z/ and shift @lines;
+
+		# A nibbling parser
+		while ( @lines ) {
+			# Do we have a document header?
+			if ( $lines[0] =~ /^---\s*(?:(.+)\s*)?\z/ ) {
+				# Handle scalar documents
+				shift @lines;
+				if ( defined $1 and $1 !~ /^(?:\#.+|\%YAML[: ][\d\.]+)\z/ ) {
+					push @$self, $self->_read_scalar( "$1", [ undef ], \@lines );
+					next;
+				}
+			}
+
+			if ( ! @lines or $lines[0] =~ /^(?:---|\.\.\.)/ ) {
+				# A naked document
+				push @$self, undef;
+				while ( @lines and $lines[0] !~ /^---/ ) {
+					shift @lines;
+				}
+
+			} elsif ( $lines[0] =~ /^\s*\-/ ) {
+				# An array at the root
+				my $document = [ ];
+				push @$self, $document;
+				$self->_read_array( $document, [ 0 ], \@lines );
+
+			} elsif ( $lines[0] =~ /^(\s*)\S/ ) {
+				# A hash at the root
+				my $document = { };
+				push @$self, $document;
+				$self->_read_hash( $document, [ length($1) ], \@lines );
+
+			} else {
+				die \"YAML::Tiny failed to classify the line '$lines[0]'";
+			}
+		}
+	};
+	if ( ref $@ eq 'SCALAR' ) {
+		return $self->_error(${$@});
+	} elsif ( $@ ) {
+		require Carp;
+		Carp::croak($@);
 	}
 
-	$self;
+	return $self;
 }
 
 # Deparse a scalar string to the actual scalar
@@ -180,7 +189,7 @@ sub _read_scalar {
 	return undef if $string eq '~';
 
 	# Single quote
-	if ( $string =~ /^\'(.*?)\'\z/ ) {
+	if ( $string =~ /^\'(.*?)\'(?:\s+\#.*)?\z/ ) {
 		return '' unless defined $1;
 		$string = $1;
 		$string =~ s/\'\'/\'/g;
@@ -192,7 +201,7 @@ sub _read_scalar {
 	# engine due to recursion and backtracking problems on strings
 	# larger than 32,000ish characters. Keep it for reference purposes.
 	# if ( $string =~ /^\"((?:\\.|[^\"])*)\"\z/ ) {
-	if ( $string =~ /^\"([^\\"]*(?:\\.[^\\"]*)*)\"\z/ ) {
+	if ( $string =~ /^\"([^\\"]*(?:\\.[^\\"]*)*)\"(?:\s+\#.*)?\z/ ) {
 		# Reusing the variable is a little ugly,
 		# but avoids a new variable and a string copy.
 		$string = $1;
@@ -203,22 +212,32 @@ sub _read_scalar {
 
 	# Special cases
 	if ( $string =~ /^[\'\"!&]/ ) {
-		Carp::croak("YAML::Tiny does not support a feature in line '$lines->[0]'");
+		die \"YAML::Tiny does not support a feature in line '$string'";
 	}
-	return {} if $string eq '{}';
-	return [] if $string eq '[]';
+	return {} if $string =~ /^{}(?:\s+\#.*)?\z/;
+	return [] if $string =~ /^\[\](?:\s+\#.*)?\z/;
 
 	# Regular unquoted string
-	return $string unless $string =~ /^[>|]/;
+	if ( $string !~ /^[>|]/ ) {
+		if (
+			$string =~ /^(?:-(?:\s|$)|[\@\%\`])/
+			or
+			$string =~ /:(?:\s|$)/
+		) {
+			die \"YAML::Tiny found illegal characters in plain scalar: '$string'";
+		}
+		$string =~ s/\s+#.*\z//;
+		return $string;
+	}
 
 	# Error
-	Carp::croak("YAML::Tiny failed to find multi-line scalar content") unless @$lines;
+	die \"YAML::Tiny failed to find multi-line scalar content" unless @$lines;
 
 	# Check the indent depth
 	$lines->[0]   =~ /^(\s*)/;
 	$indent->[-1] = length("$1");
 	if ( defined $indent->[-2] and $indent->[-1] <= $indent->[-2] ) {
-		Carp::croak("YAML::Tiny found bad indenting in line '$lines->[0]'");
+		die \"YAML::Tiny found bad indenting in line '$lines->[0]'";
 	}
 
 	# Pull the lines
@@ -252,7 +271,7 @@ sub _read_array {
 		if ( length($1) < $indent->[-1] ) {
 			return 1;
 		} elsif ( length($1) > $indent->[-1] ) {
-			Carp::croak("YAML::Tiny found bad indenting in line '$lines->[0]'");
+			die \"YAML::Tiny found bad indenting in line '$lines->[0]'";
 		}
 
 		if ( $lines->[0] =~ /^(\s*\-\s+)[^\'\"]\S*\s*:(?:\s+|$)/ ) {
@@ -289,7 +308,7 @@ sub _read_array {
 				$self->_read_hash( $array->[-1], [ @$indent, length("$1") ], $lines );
 
 			} else {
-				Carp::croak("YAML::Tiny failed to classify line '$lines->[0]'");
+				die \"YAML::Tiny failed to classify line '$lines->[0]'";
 			}
 
 		} elsif ( defined $indent->[-2] and $indent->[-1] == $indent->[-2] ) {
@@ -303,7 +322,7 @@ sub _read_array {
 			return 1;
 
 		} else {
-			Carp::croak("YAML::Tiny failed to classify line '$lines->[0]'");
+			die \"YAML::Tiny failed to classify line '$lines->[0]'";
 		}
 	}
 
@@ -328,15 +347,15 @@ sub _read_hash {
 		if ( length($1) < $indent->[-1] ) {
 			return 1;
 		} elsif ( length($1) > $indent->[-1] ) {
-			Carp::croak("YAML::Tiny found bad indenting in line '$lines->[0]'");
+			die \"YAML::Tiny found bad indenting in line '$lines->[0]'";
 		}
 
 		# Get the key
-		unless ( $lines->[0] =~ s/^\s*([^\'\" ][^\n]*?)\s*:(\s+|$)// ) {
+		unless ( $lines->[0] =~ s/^\s*([^\'\" ][^\n]*?)\s*:(\s+(?:\#.*)?|$)// ) {
 			if ( $lines->[0] =~ /^\s*[?\'\"]/ ) {
-				Carp::croak("YAML::Tiny does not support a feature in line '$lines->[0]'");
+				die \"YAML::Tiny does not support a feature in line '$lines->[0]'";
 			}
-			Carp::croak("YAML::Tiny failed to classify line '$lines->[0]'");
+			die \"YAML::Tiny failed to classify line '$lines->[0]'";
 		}
 		my $key = $1;
 
@@ -598,7 +617,7 @@ BEGIN {
 # Failed to load Scalar::Util	
 sub refaddr {
 	my $pkg = ref($_[0]) or return undef;
-	if (!!UNIVERSAL::can($_[0], 'can')) {
+	if ( !! UNIVERSAL::can($_[0], 'can') ) {
 		bless $_[0], 'Scalar::Util::Fake';
 	} else {
 		$pkg = undef;
@@ -629,15 +648,19 @@ functionality of XML, except with flexibility and choice, which makes it
 easier to read, but with a formal specification that is more complex than
 XML.
 
-The original pure-Perl implementation L<YAML> costs just over 4 megabytes of
-memory to load. Just like with Windows .ini files (3 meg to load) and CSS
-(3.5 meg to load) the situation is just asking for a B<YAML::Tiny> module, an
-incomplete but correct and usable subset of the functionality, in as little
-code as possible.
+The original pure-Perl implementation L<YAML> costs just over 4 megabytes
+of memory to load. Just like with Windows .ini files (3 meg to load) and
+CSS (3.5 meg to load) the situation is just asking for a B<YAML::Tiny>
+module, an incomplete but correct and usable subset of the functionality,
+in as little code as possible.
 
-Like the other C<::Tiny> modules, YAML::Tiny will have no non-core
-dependencies, not require a compiler, and be back-compatible to at least
-perl 5.005_03, and ideally 5.004.
+Like the other C<::Tiny> modules, YAML::Tiny has no non-core dependencies,
+does not require a compiler to install, is back-compatible to Perl 5.004,
+and can be inlined into other modules if needed.
+
+In exchange for this adding this extreme flexibility, it provides support
+for only a limited subset of YAML. But the subset supported contains most
+of the features for the more common usese of YAML.
 
 =head1 SYNOPSIS
 
@@ -673,7 +696,7 @@ perl 5.005_03, and ideally 5.004.
     # Changing data
     $yaml->[0]->{newsection} = { this => 'that' }; # Add a section
     $yaml->[0]->{section}->{Foo} = 'Not Bar!';     # Change a value
-    delete $yaml->[0]->{section};                  # Delete a value or section
+    delete $yaml->[0]->{section};                  # Delete a value
     
     # Add an entire document
     $yaml->[1] = [ 'foo', 'bar', 'baz' ];
@@ -709,15 +732,16 @@ easily-embeddable module is extremely attractive.
 
 Features will only be added if they are human readable, and can be written
 in a few lines of code. Please don't be offended if your request is
-refused. Someone has to draw the line, and for YAML::Tiny that someone is me.
+refused. Someone has to draw the line, and for YAML::Tiny that someone
+is me.
 
 If you need something with more power move up to L<YAML> (4 megabytes of
 memory overhead) or L<YAML::Syck> (275k, but requires libsyck and a C
 compiler).
 
-To restate, L<YAML::Tiny> does B<not> preserve your comments, whitespace, or
-the order of your YAML data. But it should round-trip from Perl structure
-to file and back again just fine.
+To restate, L<YAML::Tiny> does B<not> preserve your comments, whitespace,
+or the order of your YAML data. But it should round-trip from Perl
+structure to file and back again just fine.
 
 =head1 YAML TINY SPECIFICATION
 
@@ -731,23 +755,24 @@ Terminology and chapter numbers are based on that specification.
 
 =head2 1. Introduction and Goals
 
-The purpose of the YAML Tiny specification is to describe a useful subset of
-the YAML specification that can be used for typical document-oriented
-uses such as configuration files and simple data structure dumps.
+The purpose of the YAML Tiny specification is to describe a useful subset
+of the YAML specification that can be used for typical document-oriented
+use cases such as configuration files and simple data structure dumps.
 
 Many specification elements that add flexibility or extensibility are
 intentionally removed, as is support for complex datastructures, class
 and object-orientation.
 
-In general, YAML Tiny targets only those data structures available in
-JSON, with the additional limitation that only simple keys are supported.
+In general, the YAML Tiny language targets only those data structures
+available in JSON, with the additional limitation that only simple keys
+are supported.
 
 As a result, all possible YAML Tiny documents should be able to be
 transformed into an equivalent JSON document, although the reverse is
 not necesarily true (but will be true in simple cases).
 
 As a result of these simplifications the YAML Tiny specification should
-be implementable in a relatively small amount of code in any language
+be implementable in a (relatively) small amount of code in any language
 that supports Perl Compatible Regular Expressions (PCRE).
 
 =head2 2. Introduction
@@ -1030,8 +1055,8 @@ The constructor C<new> creates and returns an empty C<YAML::Tiny> object.
 
 =head2 read $filename
 
-The C<read> constructor reads a YAML file, and returns a new
-C<YAML::Tiny> object containing the contents of the file. 
+The C<read> constructor reads a YAML file from a file name,
+and returns a new C<YAML::Tiny> object containing the parsed content.
 
 Returns the object on success, or C<undef> on error.
 
@@ -1043,9 +1068,10 @@ the C<$!> variable.
 
 =head2 read_string $string;
 
-The C<read_string> method takes as argument the contents of a YAML file
-(a YAML document) as a string and returns the C<YAML::Tiny> object for
-it.
+The C<read> constructor reads a YAML file from a file name,
+and returns a new C<YAML::Tiny> object containing the parsed content.
+
+Returns the object on success, or C<undef> on error.
 
 =head2 write $filename
 
@@ -1074,9 +1100,11 @@ to explicitly import the functions.
 
   my $string = Dump(list-of-Perl-data-structures);
 
-Turn Perl data into YAML. This function works very much like Data::Dumper::Dumper().
+Turn Perl data into YAML. This function works very much like
+Data::Dumper::Dumper().
 
-It takes a list of Perl data strucures and dumps them into a serialized form.
+It takes a list of Perl data strucures and dumps them into a serialized
+form.
 
 It returns a string containing the YAML stream.
 

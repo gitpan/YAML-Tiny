@@ -1,14 +1,13 @@
-Build.PL
 Changes
 INSTALL
 LICENSE
 MANIFEST
 META.json
 META.yml
+Makefile.PL
 README
 dist.ini
 lib/YAML/Tiny.pm
-t/00-check-deps.t
 t/00-compile.t
 t/01_compile.t
 t/02_basic.t
@@ -45,6 +44,7 @@ xt/release/distmeta.t
 xt/release/eol.t
 xt/release/kwalitee.t
 xt/release/minimum-version.t
+xt/release/mojibake.t
 xt/release/no-tabs.t
 xt/release/pod-coverage.t
 xt/release/pod-no404s.t

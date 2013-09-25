@@ -3,9 +3,9 @@ BEGIN {
   $YAML::Tiny::AUTHORITY = 'cpan:ADAMK';
 }
 {
-  $YAML::Tiny::VERSION = '1.55';
+  $YAML::Tiny::VERSION = '1.56';
 }
-# git description: v1.54-8-g4c3002d
+# git description: v1.55-3-gc945058
 
 
 use strict;
@@ -1105,7 +1105,7 @@ the C<$!> variable.
 
 =head2 read_string $string;
 
-The C<read> constructor reads a YAML file from a file name,
+The C<read_string> constructor reads YAML data from a string,
 and returns a new C<YAML::Tiny> object containing the parsed content.
 
 Returns the object on success, or C<undef> on error.

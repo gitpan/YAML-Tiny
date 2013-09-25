@@ -1,3 +1,4 @@
+Build.PL
 Changes
 INSTALL
 LICENSE
@@ -9,6 +10,7 @@ README
 dist.ini
 lib/YAML/Tiny.pm
 t/00-compile.t
+t/00-report-prereqs.t
 t/01_compile.t
 t/02_basic.t
 t/03_regression.t

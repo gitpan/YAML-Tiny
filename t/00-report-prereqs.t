@@ -82,8 +82,8 @@ my $static_prereqs = do { my $x = {
                     },
        'runtime' => {
                       'requires' => {
+                                      'B' => '0',
                                       'Carp' => '0',
-                                      'Data::Dumper' => '0',
                                       'Exporter' => '0',
                                       'Fcntl' => '0',
                                       'Scalar::Util' => '0',

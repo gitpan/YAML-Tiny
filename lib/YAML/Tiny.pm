@@ -5,8 +5,8 @@ package YAML::Tiny;
 BEGIN {
   $YAML::Tiny::AUTHORITY = 'cpan:ADAMK';
 }
-# git description: v1.57-2-gca1b7ea
-$YAML::Tiny::VERSION = '1.58';
+# git description: v1.58-3-g6e2aba6
+$YAML::Tiny::VERSION = '1.59'; # TRIAL
 # XXX-INGY is 5.8.1 too old/broken for utf8?
 # XXX-XDG Lancaster consensus was that it was sufficient until
 # proven otherwise
@@ -603,8 +603,6 @@ sub _dump_string {
     my $self = shift;
     return '' unless ref $self && @$self;
 
-    local $Data::Dumper::Terse = 1;
-
     # Iterate over the documents
     my $indent = 0;
     my @lines  = ();
@@ -619,7 +617,7 @@ sub _dump_string {
 
             # A scalar document
             } elsif ( ! ref $cursor ) {
-                $lines[-1] .= ' ' . $self->_dump_scalar( $cursor, $indent );
+                $lines[-1] .= ' ' . $self->_dump_scalar( $cursor );
 
             # A list at the root
             } elsif ( ref $cursor eq 'ARRAY' ) {
@@ -651,14 +649,27 @@ sub _dump_string {
     join '', map { "$_\n" } @lines;
 }
 
+sub _has_internal_string_value {
+    my $value = shift;
+    my $b_obj = B::svref_2object(\$value);  # for round trip problem
+    return $b_obj->FLAGS & B::SVf_POK();
+}
+
 sub _dump_scalar {
     my $string = $_[1];
+    my $is_key = $_[2];
+    # Check this before checking length or it winds up looking like a string!
+    my $has_string_flag = _has_internal_string_value($string);
     return '~'  unless defined $string;
     return "''" unless length  $string;
     if (Scalar::Util::looks_like_number($string)) {
-        $string = Data::Dumper::Dumper($string);
-        chomp $string;
-        return $string;
+        # keys and values that have been used as strings get quoted
+        if ( $is_key || $has_string_flag ) {
+            return qq['$string'];
+        }
+        else {
+            return $string;
+        }
     }
     if ( $string =~ /[\x00-\x09\x0b-\x0d\x0e-\x1f\x7f-\x9f\'\n]/ ) {
         $string =~ s/\\/\\\\/g;
@@ -669,7 +680,7 @@ sub _dump_scalar {
         $string =~ s/([\x7f-\x9f])/'\x' . sprintf("%X",ord($1))/ge;
         return qq|"$string"|;
     }
-    if ($string =~ /(?:^[~!@#%&*|>?:,'"`{}\[\]]|^-+$|\s|:\z)/ or
+    if ( $string =~ /(?:^[~!@#%&*|>?:,'"`{}\[\]]|^-+$|\s|:\z)/ or
         $QUOTE{$string}
     ) {
         return "'$string'";
@@ -687,7 +698,7 @@ sub _dump_array {
         my $line = ('  ' x $indent) . '-';
         my $type = ref $el;
         if ( ! $type ) {
-            $line .= ' ' . $self->_dump_scalar( $el, $indent + 1 );
+            $line .= ' ' . $self->_dump_scalar( $el );
             push @lines, $line;
 
         } elsif ( $type eq 'ARRAY' ) {
@@ -724,10 +735,10 @@ sub _dump_hash {
     my @lines  = ();
     foreach my $name ( sort keys %$hash ) {
         my $el   = $hash->{$name};
-        my $line = ('  ' x $indent) . $self->_dump_scalar($name) . ":";
+        my $line = ('  ' x $indent) . $self->_dump_scalar($name, 1) . ":";
         my $type = ref $el;
         if ( ! $type ) {
-            $line .= ' ' . $self->_dump_scalar( $el, $indent + 1 );
+            $line .= ' ' . $self->_dump_scalar( $el );
             push @lines, $line;
 
         } elsif ( $type eq 'ARRAY' ) {
@@ -788,9 +799,8 @@ sub errstr {
 # Helper functions. Possibly not needed.
 
 
-# XXX Use to detect nv or iv for now. Find something better (Ingy).
-# XXX Possibly B? (XDG)
-use Data::Dumper;
+# Use to detect nv or iv
+use B;
 
 # XXX-INGY Is flock YAML::Tiny's responsibility?
 # Some platforms can't flock :-(
@@ -870,7 +880,7 @@ YAML::Tiny - Read/Write YAML files with as little code as possible
 
 =head1 VERSION
 
-version 1.58
+version 1.59
 
 =head1 PREAMBLE
 

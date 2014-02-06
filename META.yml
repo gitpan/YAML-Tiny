@@ -36,10 +36,10 @@ no_index:
 provides:
   YAML::Tiny:
     file: lib/YAML/Tiny.pm
-    version: '1.58'
+    version: '1.59'
 requires:
+  B: '0'
   Carp: '0'
-  Data::Dumper: '0'
   Exporter: '0'
   Fcntl: '0'
   Scalar::Util: '0'
@@ -50,7 +50,7 @@ resources:
   bugtracker: https://rt.cpan.org/Public/Dist/Display.html?Name=YAML-Tiny
   homepage: https://github.com/Perl-Toolchain-Gang/YAML-Tiny
   repository: https://github.com/Perl-Toolchain-Gang/YAML-Tiny.git
-version: '1.58'
+version: '1.59'
 x_Dist_Zilla:
   perl:
     version: '5.019007'
@@ -472,7 +472,7 @@ x_Dist_Zilla:
   zilla:
     class: Dist::Zilla::Dist::Builder
     config:
-      is_trial: '0'
+      is_trial: '1'
     version: '5.012'
 x_authority: cpan:ADAMK
 x_contributors:

@@ -1,5 +1,9 @@
 Revision history for YAML-Tiny
 
+1.60      2014-02-13 20:31:56Z
+
+        - shipping 1.59 as stable, with no changes.
+
 1.59      2014-02-06 03:10:35Z (TRIAL RELEASE)
 
         [CHANGED]

@@ -5,8 +5,8 @@ package YAML::Tiny;
 BEGIN {
   $YAML::Tiny::AUTHORITY = 'cpan:ADAMK';
 }
-# git description: v1.59-TRIAL-1-g33d9cd2
-$YAML::Tiny::VERSION = '1.60';
+# git description: v1.60-1-g1c16a0a
+$YAML::Tiny::VERSION = '1.61';
 # XXX-INGY is 5.8.1 too old/broken for utf8?
 # XXX-XDG Lancaster consensus was that it was sufficient until
 # proven otherwise
@@ -880,7 +880,7 @@ YAML::Tiny - Read/Write YAML files with as little code as possible
 
 =head1 VERSION
 
-version 1.60
+version 1.61
 
 =head1 PREAMBLE
 

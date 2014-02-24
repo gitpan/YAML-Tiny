@@ -25,12 +25,12 @@
       "configure" : {
          "requires" : {
             "ExtUtils::MakeMaker" : "6.30",
-            "Module::Build::Tiny" : "0.034"
+            "Module::Build::Tiny" : "0.035"
          }
       },
       "develop" : {
          "recommends" : {
-            "Dist::Zilla::PluginBundle::Author::ETHER" : "0.050"
+            "Dist::Zilla::PluginBundle::Author::ETHER" : "0.051"
          },
          "requires" : {
             "Dist::Zilla" : "5.013",
@@ -98,7 +98,7 @@
    "provides" : {
       "YAML::Tiny" : {
          "file" : "lib/YAML/Tiny.pm",
-         "version" : "1.60"
+         "version" : "1.61"
       }
    },
    "release_status" : "stable",
@@ -114,10 +114,10 @@
          "web" : "https://github.com/Perl-Toolchain-Gang/YAML-Tiny"
       }
    },
-   "version" : "1.60",
+   "version" : "1.61",
    "x_Dist_Zilla" : {
       "perl" : {
-         "version" : "5.019008"
+         "version" : "5.019009"
       },
       "plugins" : [
          {
@@ -133,7 +133,7 @@
          {
             "class" : "Dist::Zilla::Plugin::Git::NextVersion",
             "name" : "@Author::ETHER/Git::NextVersion",
-            "version" : "2.019"
+            "version" : "2.020"
          },
          {
             "class" : "Dist::Zilla::Plugin::PromptIfStale",
@@ -149,7 +149,7 @@
                }
             },
             "name" : "@Author::ETHER/build",
-            "version" : "0.017"
+            "version" : "0.018"
          },
          {
             "class" : "Dist::Zilla::Plugin::PromptIfStale",
@@ -163,7 +163,7 @@
                }
             },
             "name" : "@Author::ETHER/release",
-            "version" : "0.017"
+            "version" : "0.018"
          },
          {
             "class" : "Dist::Zilla::Plugin::ExecDir",
@@ -183,7 +183,7 @@
          {
             "class" : "Dist::Zilla::Plugin::Git::GatherDir",
             "name" : "@Author::ETHER/Git::GatherDir",
-            "version" : "2.019"
+            "version" : "2.020"
          },
          {
             "class" : "Dist::Zilla::Plugin::MetaYAML",
@@ -299,7 +299,7 @@
          {
             "class" : "Dist::Zilla::Plugin::Test::PodSpelling",
             "name" : "@Author::ETHER/Test::PodSpelling",
-            "version" : "2.006002"
+            "version" : "2.006005"
          },
          {
             "class" : "Dist::Zilla::Plugin::Test::Pod::No404s",
@@ -435,7 +435,7 @@
          {
             "class" : "Dist::Zilla::Plugin::RunExtraTests",
             "name" : "@Author::ETHER/RunExtraTests",
-            "version" : "0.017"
+            "version" : "0.018"
          },
          {
             "class" : "Dist::Zilla::Plugin::MakeMaker::Fallback",
@@ -467,12 +467,12 @@
          {
             "class" : "Dist::Zilla::Plugin::Run::AfterBuild",
             "name" : "@Author::ETHER/Run::AfterBuild",
-            "version" : "0.020"
+            "version" : "0.021"
          },
          {
             "class" : "Dist::Zilla::Plugin::Git::Check",
             "name" : "@Author::ETHER/initial check",
-            "version" : "2.019"
+            "version" : "2.020"
          },
          {
             "class" : "Dist::Zilla::Plugin::Git::CheckFor::MergeConflicts",
@@ -502,7 +502,7 @@
          {
             "class" : "Dist::Zilla::Plugin::Git::Check",
             "name" : "@Author::ETHER/after tests",
-            "version" : "2.019"
+            "version" : "2.020"
          },
          {
             "class" : "Dist::Zilla::Plugin::UploadToCPAN",
@@ -517,12 +517,12 @@
          {
             "class" : "Dist::Zilla::Plugin::Git::Commit",
             "name" : "@Author::ETHER/Git::Commit",
-            "version" : "2.019"
+            "version" : "2.020"
          },
          {
             "class" : "Dist::Zilla::Plugin::Git::Tag",
             "name" : "@Author::ETHER/Git::Tag",
-            "version" : "2.019"
+            "version" : "2.020"
          },
          {
             "class" : "Dist::Zilla::Plugin::GitHub::Update",
@@ -532,7 +532,7 @@
          {
             "class" : "Dist::Zilla::Plugin::Git::Push",
             "name" : "@Author::ETHER/Git::Push",
-            "version" : "2.019"
+            "version" : "2.020"
          },
          {
             "class" : "Dist::Zilla::Plugin::InstallRelease",
@@ -668,6 +668,7 @@
    "x_authority" : "cpan:ADAMK",
    "x_contributors" : [
       "Alexandr Ciornii <chorny@cpan.org>",
+      "Craig A. Berry <craigberry@mac.com>",
       "David Golden <dagolden@cpan.org>",
       "Graham Knop <haarg@haarg.org>",
       "Ingy döt Net <ingy@ingy.net>",

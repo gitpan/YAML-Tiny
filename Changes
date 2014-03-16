@@ -1,5 +1,12 @@
 Revision history for YAML-Tiny
 
+1.62      2014-03-16 12:28:44Z
+
+        [FIXED]
+
+        - fix handling of trailing colon in key name (RT#92916, H.Merijn
+          Brand)
+
 1.61      2014-02-24 16:59:49Z
         [FIXED]
 

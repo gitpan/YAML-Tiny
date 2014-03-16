@@ -21,7 +21,7 @@ configure_requires:
   ExtUtils::MakeMaker: '6.30'
   Module::Build::Tiny: '0.035'
 dynamic_config: 0
-generated_by: 'Dist::Zilla version 5.013, CPAN::Meta::Converter version 2.133380'
+generated_by: 'Dist::Zilla version 5.013, CPAN::Meta::Converter version 2.140640'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -36,13 +36,13 @@ no_index:
 provides:
   YAML::Tiny:
     file: lib/YAML/Tiny.pm
-    version: '1.61'
+    version: '1.62'
 requires:
   B: '0'
   Carp: '0'
   Exporter: '0'
   Fcntl: '0'
-  Scalar::Util: '0'
+  Scalar::Util: '1.18'
   perl: '5.008001'
   strict: '0'
   warnings: '0'
@@ -50,7 +50,7 @@ resources:
   bugtracker: https://rt.cpan.org/Public/Dist/Display.html?Name=YAML-Tiny
   homepage: https://github.com/Perl-Toolchain-Gang/YAML-Tiny
   repository: https://github.com/Perl-Toolchain-Gang/YAML-Tiny.git
-version: '1.61'
+version: '1.62'
 x_Dist_Zilla:
   perl:
     version: '5.019009'
@@ -78,7 +78,7 @@ x_Dist_Zilla:
           phase: build
           skip: []
       name: '@Author::ETHER/build'
-      version: '0.018'
+      version: '0.020'
     -
       class: Dist::Zilla::Plugin::PromptIfStale
       config:
@@ -89,7 +89,7 @@ x_Dist_Zilla:
           phase: release
           skip: []
       name: '@Author::ETHER/release'
-      version: '0.018'
+      version: '0.020'
     -
       class: Dist::Zilla::Plugin::ExecDir
       name: '@Author::ETHER/ExecDir'
@@ -194,7 +194,7 @@ x_Dist_Zilla:
     -
       class: Dist::Zilla::Plugin::Test::PodSpelling
       name: '@Author::ETHER/Test::PodSpelling'
-      version: '2.006005'
+      version: '2.006007'
     -
       class: Dist::Zilla::Plugin::Test::Pod::No404s
       name: '@Author::ETHER/Test::Pod::No404s'
@@ -303,7 +303,7 @@ x_Dist_Zilla:
     -
       class: Dist::Zilla::Plugin::MakeMaker::Fallback
       name: '@Author::ETHER/MakeMaker::Fallback'
-      version: '0.006'
+      version: '0.007'
     -
       class: Dist::Zilla::Plugin::ModuleBuildTiny
       name: '@Author::ETHER/ModuleBuildTiny'
@@ -469,6 +469,10 @@ x_Dist_Zilla:
       class: Dist::Zilla::Plugin::FinderCode
       name: ':NoFiles'
       version: '5.013'
+    -
+      class: Dist::Zilla::Plugin::VerifyPhases
+      name: '@Author::ETHER/PHASE VERIFICATION'
+      version: '0.002'
   zilla:
     class: Dist::Zilla::Dist::Builder
     config:
@@ -486,4 +490,5 @@ x_contributors:
   - 'Neil Bowers <neil@bowers.com>'
   - 'Olivier Mengué <dolmen@cpan.org>'
   - 'Steffen Müller <smueller@cpan.org>'
+  - 'Tim Bunce <Tim.Bunce@pobox.com>'
   - "יובל קוג'מן (Yuval Kogman) <nothingmuch@woobling.org>"

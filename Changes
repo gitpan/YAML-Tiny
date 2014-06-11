@@ -1,5 +1,17 @@
 Revision history for YAML-Tiny
 
+1.63      2014-06-11 21:58:18Z
+
+        [FIXED]
+
+        - incorrect error messages fixed, when $@ is clobbered when Carp
+          wasn't loaded (GH#30, GH#31, Hilko Bengen)
+
+        [CHANGED]
+
+        - now checking for, and erroring on, duplicate keys found in a hash
+          (GH#32, Hilko Bengen)
+
 1.62      2014-03-16 12:28:44Z
 
         [FIXED]
@@ -8,6 +20,7 @@ Revision history for YAML-Tiny
           Brand)
 
 1.61      2014-02-24 16:59:49Z
+
         [FIXED]
 
         - fixed a test for VMS (RT#93297, Craig Berry)

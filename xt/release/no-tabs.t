@@ -1,13 +1,77 @@
 use strict;
 use warnings;
 
-# this test was generated with Dist::Zilla::Plugin::Test::NoTabs 0.06
+# this test was generated with Dist::Zilla::Plugin::Test::NoTabs 0.08
 
 use Test::More 0.88;
 use Test::NoTabs;
 
 my @files = (
-    'lib/YAML/Tiny.pm'
+    'lib/YAML/Tiny.pm',
+    't/00-report-prereqs.t',
+    't/01_api.t',
+    't/01_compile.t',
+    't/10_read.t',
+    't/11_read_string.t',
+    't/12_write.t',
+    't/13_write_string.t',
+    't/20_subclass.t',
+    't/21_yamlpm_compat.t',
+    't/30_yaml_spec_tml.t',
+    't/31_local_tml.t',
+    't/32_world_tml.t',
+    't/86_fail.t',
+    't/README.md',
+    't/data/ascii.yml',
+    't/data/latin1.yml',
+    't/data/multibyte.yml',
+    't/data/utf_16_le_bom.yml',
+    't/data/utf_8_bom.yml',
+    't/lib/TestBridge.pm',
+    't/lib/TestML/Tiny.pm',
+    't/lib/TestUtils.pm',
+    't/tml',
+    't/tml-local/dump-error/circular.tml',
+    't/tml-local/load-error/document.tml',
+    't/tml-local/load-error/scalar.tml',
+    't/tml-local/load-error/tag.tml',
+    't/tml-local/perl-to-yaml/quoting.tml',
+    't/tml-local/yaml-roundtrip/collection.tml',
+    't/tml-local/yaml-roundtrip/comment.tml',
+    't/tml-local/yaml-roundtrip/document.tml',
+    't/tml-local/yaml-roundtrip/mapping.tml',
+    't/tml-local/yaml-roundtrip/quoting.tml',
+    't/tml-local/yaml-roundtrip/scalar.tml',
+    't/tml-local/yaml-roundtrip/sequence.tml',
+    't/tml-spec/basic-data.tml',
+    't/tml-spec/unicode.tml',
+    't/tml-world/Acme-Time-Baby.tml',
+    't/tml-world/Data-Swap.tml',
+    't/tml-world/Games-Nintendo-Wii-Mii.tml',
+    't/tml-world/HTML-WebDAO.tml',
+    't/tml-world/ITS-SIN-FIDS-Content-XML.tml',
+    't/tml-world/Plagger.tml',
+    't/tml-world/Spreadsheet-Read.tml',
+    't/tml-world/Template-Provider-Unicode-Japanese.tml',
+    't/tml-world/Vanilla-Perl.tml',
+    't/tml-world/YAML-Tiny-META.tml',
+    't/tml-world/toolbar.tml',
+    't/tml-world/yaml_org.tml',
+    'xt/author/00-compile.t',
+    'xt/author/pod-spell.t',
+    'xt/compare/roundtrip.t',
+    'xt/lib/Test.pm',
+    'xt/release/changes_has_content.t',
+    'xt/release/cpan-changes.t',
+    'xt/release/distmeta.t',
+    'xt/release/kwalitee.t',
+    'xt/release/minimum-version.t',
+    'xt/release/mojibake.t',
+    'xt/release/no-tabs.t',
+    'xt/release/pod-coverage.t',
+    'xt/release/pod-no404s.t',
+    'xt/release/pod-syntax.t',
+    'xt/release/portability.t'
 );
 
 notabs_ok($_) foreach @files;
